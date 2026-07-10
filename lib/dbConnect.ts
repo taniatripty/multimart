@@ -1,60 +1,76 @@
 
 
-// import { Db, MongoClient, ServerApiVersion } from "mongodb";
+// import { Collection, Db, MongoClient } from "mongodb";
 
-// const uri = process.env.MONGODB_URI!;
+// const uri = process.env.NEXT_PUBLIC_MONGODB_URI!;
 // const dbName = process.env.MONGODB_DB!;
-// console.log(dbName)
 
-// const options = {
-//   serverApi: {
-//     version: ServerApiVersion.v1,
-//     strict: true,
-//     deprecationErrors: true,
-//   },
+// export const collectionNames = {
+//   TEST_USER: "users", // or whatever you use
 // };
 
+// if (!uri) {
+//   throw new Error("Missing MONGODB_URI");
+// }
+
+// if (!dbName) {
+//   throw new Error("Missing MONGODB_DB");
+// }
+
 // let client: MongoClient;
-// let mongoClientPromise: Promise<MongoClient>;
+// let clientPromise: Promise<MongoClient>;
 
 // declare global {
+//   // eslint-disable-next-line no-var
 //   var _mongoClientPromise: Promise<MongoClient> | undefined;
 // }
 
 // if (process.env.NODE_ENV === "development") {
 //   if (!global._mongoClientPromise) {
-//     client = new MongoClient(uri, options);
-
-//     global._mongoClientPromise = client.connect().then((client) => {
-//       console.log("✅ MongoDB Connected Successfully");
-//       return client;
-//     });
+//     client = new MongoClient(uri);
+//     global._mongoClientPromise = client.connect();
 //   }
 
-//   mongoClientPromise = global._mongoClientPromise;
+//   clientPromise = global._mongoClientPromise;
 // } else {
-//   client = new MongoClient(uri, options);
-
-//   mongoClientPromise = client.connect().then((client) => {
-//     console.log(" MongoDB Connected Successfully");
-//     return client;
-//   });
+//   client = new MongoClient(uri);
+//   clientPromise = client.connect();
 // }
 
 // export async function connectDB(): Promise<Db> {
-//   const client = await mongoClientPromise;
+//   const client = await clientPromise;
+
+//   // Verify the connection
+//   await client.db(dbName).command({ ping: 1 });
+
+//   console.log(`✅ MongoDB Connected → ${dbName}`);
+
 //   return client.db(dbName);
 // }
 
-// export default mongoClientPromise;
+// export async function getCollection<T extends Document>(
+//   name: string
+// ): Promise<Collection<T>> {
+//   const client = await clientPromise;
+//   const db = client.db(dbName);
+//   return db.collection<T>(name);
+// }
 
-import { Db, MongoClient } from "mongodb";
 
-const uri = process.env.MONGODB_URI!;
+// export default clientPromise;
+
+// lib/dbConnect.ts
+import { Collection, Db, MongoClient, Document } from "mongodb";
+
+const uri = process.env.NEXT_PUBLIC_MONGODB_URI!;
 const dbName = process.env.MONGODB_DB!;
 
+export const collectionNames = {
+  TEST_USER: "users",
+};
+
 if (!uri) {
-  throw new Error("Missing MONGODB_URI");
+  throw new Error("Missing NEXT_PUBLIC_MONGODB_URI");
 }
 
 if (!dbName) {
@@ -90,6 +106,14 @@ export async function connectDB(): Promise<Db> {
   console.log(`✅ MongoDB Connected → ${dbName}`);
 
   return client.db(dbName);
+}
+
+export async function getCollection<T extends Document>(
+  name: string
+): Promise<Collection<T>> {
+  const client = await clientPromise;
+  const db = client.db(dbName);
+  return db.collection<T>(name);
 }
 
 export default clientPromise;
