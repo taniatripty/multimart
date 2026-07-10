@@ -20,10 +20,12 @@ import {
 const menu = [
   { title: "Home", href: "/" },
   { title: "Shop", href: "/products" },
+    { title: "Become a seller", href: "/seller" },
   { title: "Deals", href: "/deals" },
   { title: "Brands", href: "/brands" },
   { title: "Vendors", href: "/vendors" },
   { title: "Contact", href: "/contact" },
+   { title: "About Us", href: "/aboutUs" },
 ];
 
 export default function Navbar() {

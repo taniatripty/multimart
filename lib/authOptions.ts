@@ -1,11 +1,11 @@
-// lib/authOptions.ts
+
 import { LoginUser } from "@/app/actions/auth/loginUser";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
-import { getCollection } from "./dbConnect";
+import { collectionNames, getCollection } from "./dbConnect";
 
-// === Type augmentation (so you don't need next-auth.d.ts) ===
+
 declare module "next-auth" {
   interface Session {
     user: {
@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      const usersCollection = await getCollection("users");
+      const usersCollection = await getCollection(collectionNames.TEST_USER);
 
       if (user?.email) {
         let dbUser = await usersCollection.findOne({ email: user.email });

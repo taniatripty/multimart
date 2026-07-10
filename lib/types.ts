@@ -1,4 +1,4 @@
-// lib/types.ts
+
 import { ObjectId } from "mongodb";
 
 export type UserRole = "admin" | "user";
