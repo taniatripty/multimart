@@ -3,6 +3,7 @@
 import { Heart, Menu, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,7 @@ const menu = [
 ];
 
 export default function Navbar() {
+  const { data: session } = useSession();
   const pathname = usePathname();
 
   return (
@@ -79,6 +81,42 @@ export default function Navbar() {
             </Badge>
           </Button>
 
+           <div className="hidden items-center gap-2 lg:flex">
+    {session?.user ? (
+      <>
+        <span className="text-sm font-medium text-slate-200">
+          Hi, {session.user.name}
+        </span>
+
+        <Button
+          size="sm"
+          variant="outline"
+          className="border-amber-400 bg-transparent text-amber-400 hover:bg-amber-400 hover:text-slate-900"
+          onClick={() => signOut({ callbackUrl: "/" })}
+        >
+          Logout
+        </Button>
+      </>
+    ) : (
+      <>
+        <Button
+         
+          variant="ghost"
+          className="text-slate-200 hover:bg-slate-800 hover:text-white"
+        >
+          <Link href="/login">Login</Link>
+        </Button>
+
+        <Button
+         
+          className="bg-amber-400 text-slate-900 hover:bg-amber-300"
+        >
+          <Link href="/register">Register</Link>
+        </Button>
+      </>
+    )}
+  </div>
+
           {/* Mobile */}
           <div className="lg:hidden">
             <Sheet>
@@ -120,6 +158,41 @@ export default function Navbar() {
                     </Link>
                   ))}
                 </nav>
+                <div className="mt-8 border-t border-slate-700 pt-6">
+          {session?.user ? (
+            <div className="space-y-4">
+              <p className="text-sm text-slate-300">
+                Signed in as
+              </p>
+
+              <p className="font-semibold text-amber-400">
+                {session.user.name}
+              </p>
+
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => signOut({ callbackUrl: "/" })}
+              >
+                Logout
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Button  variant="outline" className="w-full">
+                <Link href="/login">Login</Link>
+              </Button>
+
+              <Button
+               
+                className="w-full bg-amber-400 text-slate-900 hover:bg-amber-300"
+              >
+                <Link href="/register">Register</Link>
+              </Button>
+            </div>
+          )}
+        </div>
+
               </SheetContent>
             </Sheet>
           </div>
@@ -128,3 +201,4 @@ export default function Navbar() {
     </header>
   );
 }
+
