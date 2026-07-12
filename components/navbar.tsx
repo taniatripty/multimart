@@ -3,6 +3,7 @@
 import { Heart, Menu, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {UserRole} from "@/lib/types"
 import { useSession, signOut } from "next-auth/react";
 
 import { cn } from "@/lib/utils";
@@ -31,6 +32,22 @@ const menu = [
 export default function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
+ const role=session?.user?.role
+  const dashboardRoute =
+  role===UserRole.SELLER 
+  ? "/sellerDashboard" 
+   : UserRole.USER 
+   ? "/userDashboard"
+    :"/adminDashboard"
+console.log(role)
+    const navMenu = [...menu]
+
+    if (session?.user) {
+  navMenu.push({
+    title: "Dashboard",
+    href: dashboardRoute,
+  });
+}
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-slate-900 shadow-lg">
@@ -46,7 +63,7 @@ export default function Navbar() {
 
         {/* Desktop Menu */}
         <nav className="hidden items-center gap-8 lg:flex">
-          {menu.map((item) => (
+          {navMenu.map((item) => (
             <Link
               key={item.title}
               href={item.href}
@@ -146,7 +163,7 @@ export default function Navbar() {
                 </SheetHeader>
 
                 <nav className="mt-8 flex flex-col gap-2">
-                  {menu.map((item) => (
+                  {navMenu.map((item) => (
                     <Link
                       key={item.title}
                       href={item.href}
