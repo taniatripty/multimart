@@ -87,7 +87,7 @@ export default function Navbar() {
     {session?.user ? (
       <>
         <span className="text-sm font-medium text-slate-200">
-          Hi, {session.user.name}
+          Hi, {session.user.email}
         </span>
 
         <Button

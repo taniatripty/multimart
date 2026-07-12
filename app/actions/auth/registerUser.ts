@@ -5,7 +5,7 @@
 import bcrypt from "bcryptjs";
 
 import { getCollection } from "@/lib/dbConnect";
-import type { UserDocument } from "@/lib/types";
+import { UserRole, type UserDocument } from "@/lib/types";
 
 export interface RegisterInput {
   name: string;
@@ -36,7 +36,7 @@ export async function RegisterUser(data: RegisterInput) {
     email: data.email,
     password: hashedPassword,
     image: null,
-    role: "user",
+    role:UserRole.USER,
     createdAt: new Date(),
     updatedAt: new Date(),
   };

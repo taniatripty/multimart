@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/authOptions";
-import { becomeSellerService } from "@/app/services/seller/seller.services";
+import { becomeSellerService } from "@/services/seller/seller.services";
+
 
 
 export async function PATCH(req: NextRequest) {

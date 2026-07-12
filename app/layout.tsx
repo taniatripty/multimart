@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/navbar";
-import Footer from "@/components/shared/footer";
+
 import NextAuthProvider from "./providers/NextAuthProvider";
 import { Toaster } from "sonner";
 
@@ -37,11 +36,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
        <NextAuthProvider>
         
-       <Navbar></Navbar>
-         <main className="flex-1">
+      
+        
             {children}
-          </main>
-       <Footer></Footer>
+          
+      
          <Toaster
             position="top-right"
             richColors
