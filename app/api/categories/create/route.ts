@@ -1,4 +1,4 @@
-import { createCategoryService } from "@/services/createCategory/createCategory.services";
+import { createCategoryService, getCategoriesService } from "@/services/createCategory/createCategory.services";
 import { NextRequest, NextResponse } from "next/server";
 
 
@@ -13,6 +13,34 @@ export async function POST(req: NextRequest) {
       {
         success: result.success,
         message: result.message,
+      },
+      {
+        status: result.status,
+      }
+    );
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Internal Server Error",
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const result = await getCategoriesService();
+
+    return NextResponse.json(
+      {
+        success: result.success,
+        data: result.data,
       },
       {
         status: result.status,

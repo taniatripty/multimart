@@ -1,6 +1,6 @@
 import { collectionNames, getCollection } from "@/lib/dbConnect";
 
-export interface CreateBrandPayload {
+export interface CreateBrands {
   name: string;
   slug: string;
   logo?: string;
@@ -9,8 +9,20 @@ export interface CreateBrandPayload {
   isActive: boolean;
 }
 
+export interface BrandDocuments {
+  name: string;
+  slug: string;
+  logo?: string;
+  website?: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+
+}
+
 export async function createBrandService(
-  payload: CreateBrandPayload
+  payload:CreateBrands
 ) {
   const brandCollection = await getCollection(collectionNames.BRANDS);
 
@@ -58,5 +70,22 @@ export async function createBrandService(
     success: true,
     status: 201,
     message: "Brand created successfully.",
+  };
+}
+
+export async function getBrandsService() {
+  const brandCollection = await getCollection<BrandDocuments>(
+    collectionNames.BRANDS
+  );
+
+  const brands = await brandCollection
+    .find({})
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return {
+    success: true,
+    status: 200,
+    data: brands,
   };
 }

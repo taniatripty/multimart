@@ -58,3 +58,21 @@ export async function createCategoryService(
     message: "Category created successfully.",
   };
 }
+
+export async function getCategoriesService() {
+  const categoryCollection =
+    await getCollection<CategoryDocument>(
+      collectionNames.CATEGORIES
+    );
+
+  const categories = await categoryCollection
+    .find({})
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return {
+    success: true,
+    status: 200,
+    data: categories,
+  };
+}
