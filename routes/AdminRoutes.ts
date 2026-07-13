@@ -10,6 +10,11 @@ export const adminRoutes=[
           title: "All statistics",
           url: "/admin-dashboard",
         },
+        {
+          title: "Create Categories",
+          url: "/adminDashboard/createCategories",
+        },
+
        
          
     ]}

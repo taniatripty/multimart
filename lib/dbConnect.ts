@@ -6,6 +6,7 @@ const dbName = process.env.MONGODB_DB!;
 
 export const collectionNames = {
   TEST_USER: "users",
+  CATEGORIES:"categories"
 };
 
 if (!uri) {

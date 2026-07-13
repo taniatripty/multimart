@@ -1,97 +1,4 @@
-// "use client"
 
-// import * as React from "react"
-
-// import { NavDocuments } from "@/components/nav-documents"
-
-// import {
-//   Sidebar,
-//   SidebarContent,
-//   SidebarFooter,
-//   SidebarHeader,
-//   SidebarMenu,
-//   SidebarMenuButton,
-//   SidebarMenuItem,
-// } from "@/components/ui/sidebar"
-// import { LayoutDashboardIcon, ListIcon, ChartBarIcon, FolderIcon, UsersIcon, CameraIcon, FileTextIcon, Settings2Icon, CircleHelpIcon, SearchIcon, DatabaseIcon, FileChartColumnIcon, FileIcon, CommandIcon } from "lucide-react"
-// import {UserRole} from "@/lib/types"
-// import { adminRoutes } from "@/routes/AdminRoutes"
-// import { sellerRoutes } from "@/routes/SellerRoutes"
-// import { userRoutes } from "@/routes/UserRoutes"
-// const data = {
-  
- 
-//   documents: [
-//     {
-//       name: "Data Library",
-//       url: "#",
-//       icon: (
-//         <DatabaseIcon
-//         />
-//       ),
-//     },
-//     {
-//       name: "Reports",
-//       url: "#",
-//       icon: (
-//         <FileChartColumnIcon
-//         />
-//       ),
-//     },
-//     {
-//       name: "Word Assistant",
-//       url: "#",
-//       icon: (
-//         <FileIcon
-//         />
-//       ),
-//     },
-//   ],
-// }
-// let routes = [];
-
-//   switch (user.role) {
-//     case UserRole.ADMIN:
-//       routes = adminRoutes;
-//       break;
-//     case UserRole.SELLER:
-//       routes = sellerRoutes;
-//       break;
-//     case UserRole.USER:
-//       routes = userRoutes;
-//       break;
-//     default:
-//       routes = [];
-//   }
-
-// export function AppSidebar({user, ...props }:{
-//   user: { role: string };
-// } & React.ComponentProps<typeof Sidebar>) {
-//   return (
-//     <Sidebar  {...props}>
-//       <SidebarHeader>
-//         <SidebarMenu>
-//           <SidebarMenuItem>
-//             <SidebarMenuButton
-             
-//             >
-//               <CommandIcon className="size-5!" />
-//               <span className="text-base font-semibold">Acme Inc.</span>
-//             </SidebarMenuButton>
-//           </SidebarMenuItem>
-//         </SidebarMenu>
-//       </SidebarHeader>
-//       <SidebarContent>
-       
-//         <NavDocuments items={data.documents} />
-       
-//       </SidebarContent>
-//       <SidebarFooter>
-       
-//       </SidebarFooter>
-//     </Sidebar>
-//   )
-// }
 
 "use client";
 
@@ -194,14 +101,18 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Command className="h-5 w-5" />
           </div>
+         <Link href="/">
           <div className="flex flex-col">
+          
             <span className="text-base font-bold tracking-tight">
               MultiMart
             </span>
             <span className="text-xs text-muted-foreground">
               {role?.toLowerCase() ?? "user"} dashboard
             </span>
+          
           </div>
+         </Link>
         </div>
       </SidebarHeader>
 
