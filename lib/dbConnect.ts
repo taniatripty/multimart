@@ -7,7 +7,8 @@ const dbName = process.env.MONGODB_DB!;
 export const collectionNames = {
   TEST_USER: "users",
   CATEGORIES:"categories",
-  BRANDS:"brands"
+  BRANDS:"brands",
+  PRODUCTS:"products"
 };
 
 if (!uri) {
