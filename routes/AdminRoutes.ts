@@ -14,6 +14,10 @@ export const adminRoutes=[
           title: "Create Categories",
           url: "/adminDashboard/createCategories",
         },
+         {
+          title: "Create Brands",
+          url: "/adminDashboard/createbands",
+        },
 
        
          
