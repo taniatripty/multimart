@@ -3,12 +3,14 @@ import { signIn } from "next-auth/react";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -51,14 +53,37 @@ export default function LoginPage() {
           className="w-full rounded border p-2"
           required
         />
-        <input
+        {/* <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Password"
           className="w-full rounded border p-2"
           required
-        />
+        /> */}
+<div className="relative">
+  <input
+    type={showPassword ? "text" : "password"}
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    placeholder="Password"
+    className="w-full rounded border p-2 pr-10"
+    required
+  />
+
+  <button
+    type="button"
+    onClick={() => setShowPassword((prev) => !prev)}
+    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700"
+  >
+    {showPassword ? (
+      <EyeOff className="h-5 w-5" />
+    ) : (
+      <Eye className="h-5 w-5" />
+    )}
+  </button>
+</div>
+
         <button
           type="submit"
           disabled={loading}

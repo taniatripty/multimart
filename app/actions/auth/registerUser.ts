@@ -4,7 +4,7 @@
 
 import bcrypt from "bcryptjs";
 
-import { getCollection } from "@/lib/dbConnect";
+import { collectionNames, getCollection } from "@/lib/dbConnect";
 import { UserRole, type UserDocument } from "@/lib/types";
 
 export interface RegisterInput {
@@ -12,6 +12,7 @@ export interface RegisterInput {
   email: string;
   password: string;
   confirmPassword: string;
+  image:string
 }
 
 export async function RegisterUser(data: RegisterInput) {
@@ -19,7 +20,7 @@ export async function RegisterUser(data: RegisterInput) {
     throw new Error("Passwords do not match");
   }
 
-  const usersCollection = await getCollection<UserDocument>("users");
+  const usersCollection = await getCollection<UserDocument>(collectionNames.TEST_USER);
 
   const existing = await usersCollection.findOne({
     email: data.email,
@@ -35,7 +36,7 @@ export async function RegisterUser(data: RegisterInput) {
     name: data.name,
     email: data.email,
     password: hashedPassword,
-    image: null,
+    image: data.image,
     role:UserRole.USER,
     createdAt: new Date(),
     updatedAt: new Date(),
