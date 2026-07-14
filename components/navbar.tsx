@@ -20,7 +20,7 @@ import {
 
 const menu = [
   { title: "Home", href: "/" },
-  { title: "Shop", href: "/products" },
+  { title: "Shop", href: "/allProducts" },
     { title: "Become a seller", href: "/becomeSeller" },
   { title: "Deals", href: "/deals" },
   { title: "Brands", href: "/brands" },

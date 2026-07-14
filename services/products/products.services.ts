@@ -1,95 +1,6 @@
-// import { ObjectId } from "mongodb";
-// import { collectionNames, getCollection } from "@/lib/dbConnect";
-
-// export interface CreateProductPayload {
-//   name: string;
-//   shortDescription?: string;
-//   description?: string;
-
-//   category: string;
-//   subcategory?: string;
-
-//   brand: string;
-
-//   price: number;
-//   discount: number;
-
-//   stock: number;
-
-//   thumbnail?: string;
-
-//   colors?: string[];
-//   sizes?: string[];
-//   features?: string[];
-// }
-
-// export async function createProductService(
-//   payload: CreateProductPayload
-// ) {
-//   const productCollection = await getCollection(
-//     collectionNames.PRODUCTS
-//   );
-
-//   // Duplicate Name Check
-//   const existingProduct = await productCollection.findOne({
-//     name: payload.name,
-//   });
-
-//   if (existingProduct) {
-//     throw new Error("Product already exists.");
-//   }
-
-//   const product = {
-//     ...payload,
-
-//     categoryId: new ObjectId(payload.category),
-
-//     subcategory: payload.subcategory || null,
-
-//     brandId: new ObjectId(payload.brand),
-
-//     // seller info
-//     sellerId: null,
-//     storeId: null,
-
-//     // calculated
-//     salePrice:
-//       payload.discount > 0
-//         ? Number(
-//             (
-//               payload.price -
-//               payload.price * (payload.discount / 100)
-//             ).toFixed(2)
-//           )
-//         : payload.price,
-
-//     // admin controlled
-//     status: "pending",
-
-//     featured: false,
-
-//     // review
-//     averageRating: 0,
-
-//     totalReviews: 0,
-
-//     totalSold: 0,
-
-//     views: 0,
-
-//     createdAt: new Date(),
-
-//     updatedAt: new Date(),
-//   };
-
-//   const result = await productCollection.insertOne(product);
-
-//   return {
-//     insertedId: result.insertedId,
-//   };
-// }
 
 import { collectionNames, getCollection } from "@/lib/dbConnect";
+import { ObjectId } from "mongodb";
 
 export interface CreateProductPayload {
   name: string;
@@ -114,6 +25,43 @@ export interface CreateProductPayload {
 
   seller: string;
 }
+
+interface ProductDocument {
+  _id?: ObjectId;
+  name: string;
+  shortDescription: string;
+  description: string;
+
+  categoryId: string;
+  subcategory: string;
+  brandId: string;
+
+  sellerId: string;
+  storeId?: string;
+
+  price: number;
+  discount: number;
+  salePrice: number;
+  stock: number;
+
+  thumbnail: string;
+
+  colors: string[];
+  sizes: string[];
+  features: string[];
+
+  status: string;
+  featured: boolean;
+
+  averageRating: number;
+  totalReviews: number;
+  totalSold: number;
+  views: number;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 
 export async function createProductService(
   payload: CreateProductPayload
@@ -201,7 +149,7 @@ export async function createProductService(
 
     // Admin controlled
     status: "pending",
-    featured: false,
+   
 
     // Analytics
     averageRating: 0,
@@ -217,5 +165,84 @@ export async function createProductService(
 
   return {
     insertedId: result.insertedId,
+  };
+}
+
+export async function getProductsService() {
+  const productCollection =
+    await getCollection<ProductDocument>(
+      collectionNames.PRODUCTS
+    );
+
+  const categoryCollection =
+    await getCollection(collectionNames.CATEGORIES);
+
+  const brandCollection =
+    await getCollection(collectionNames.BRANDS);
+
+  const products = await productCollection
+    .find({})
+    .sort({
+      createdAt: -1,
+    })
+    .toArray();
+
+  const data = await Promise.all(
+    products.map(async (product) => {
+      const category = await categoryCollection.findOne({
+        _id: new ObjectId(product.categoryId),
+      });
+
+      const brand = await brandCollection.findOne({
+        _id: new ObjectId(product.brandId),
+      });
+
+      return {
+        ...product,
+
+        categoryName: category?.name ?? "",
+
+        brandName: brand?.name ?? "",
+      };
+    })
+  );
+
+  return {
+    success: true,
+    status: 200,
+    data,
+  };
+}
+
+export async function getSingleProductService(id: string) {
+  if (!ObjectId.isValid(id)) {
+    return {
+      success: false,
+      status: 400,
+      message: "Invalid product id.",
+    };
+  }
+
+  const productCollection = await getCollection(
+    collectionNames.PRODUCTS
+  );
+
+  const product = await productCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!product) {
+    return {
+      success: false,
+      status: 404,
+      message: "Product not found.",
+    };
+  }
+
+  return {
+    success: true,
+    status: 200,
+    message: "Product fetched successfully.",
+    data: product,
   };
 }
