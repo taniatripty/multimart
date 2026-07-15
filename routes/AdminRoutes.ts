@@ -18,6 +18,14 @@ export const adminRoutes=[
           title: "Create Brands",
           url: "/adminDashboard/createbands",
         },
+        {
+          title: "Manage Products",
+          url: "/adminDashboard/manageProducts",
+        },
+         {
+          title: "Manage seller",
+          url: "/adminDashboard/manageSeller",
+        },
 
        
          

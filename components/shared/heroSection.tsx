@@ -31,7 +31,7 @@ export default function HeroSection() {
 
           <div className="mt-10 flex flex-wrap gap-4">
             <Button size="lg" className="bg-amber-400 text-slate-900 hover:bg-amber-500">
-              <Link href="/products" className="flex items-center gap-2">
+              <Link href="/allProducts" className="flex items-center gap-2">
                 Shop Now
                 <ArrowRight size={18} />
               </Link>
@@ -42,7 +42,7 @@ export default function HeroSection() {
               variant="outline"
               className="border-slate-700 bg-transparent text-white hover:bg-slate-800"
             >
-              <Link href="/become-seller">
+              <Link href="/becomeSeller">
                 Become a Seller
               </Link>
             </Button>

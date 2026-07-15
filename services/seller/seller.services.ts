@@ -1,9 +1,10 @@
-import { getCollection } from "@/lib/dbConnect";
+import { collectionNames, getCollection } from "@/lib/dbConnect";
 import {
   SellerStatus,
   UserDocument,
   UserRole,
 } from "@/lib/types";
+import { ObjectId } from "mongodb";
 
 export interface BecomeSellerPayload {
   email: string;
@@ -78,5 +79,69 @@ export async function becomeSellerService(
     status: 200,
     message:
       "Seller request submitted successfully. Please wait for admin approval.",
+  };
+}
+
+export async function updateSellerStatusService(
+  id: string,
+  status: SellerStatus.APPROVED | SellerStatus.REJECTED
+) {
+  if (!ObjectId.isValid(id)) {
+    return {
+      success: false,
+      status: 400,
+      message: "Invalid seller id.",
+    };
+  }
+
+  const userCollection = await getCollection(
+    collectionNames.TEST_USER
+  );
+
+  const user = await userCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      status: 404,
+      message: "Seller not found.",
+    };
+  }
+
+  const role =
+    status === SellerStatus.APPROVED
+      ? UserRole.SELLER
+      : UserRole.USER;
+
+  const result = await userCollection.updateOne(
+    {
+      _id: new ObjectId(id),
+    },
+    {
+      $set: {
+        role,
+        sellerStatus: status,
+        updatedAt: new Date(),
+      },
+    }
+  );
+
+  if (!result.modifiedCount) {
+    return {
+      success: false,
+      status: 400,
+      message: "Failed to update seller status.",
+    };
+  }
+
+  return {
+    success: true,
+    status: 200,
+    message:
+      status === SellerStatus.APPROVED
+        ? "Seller approved successfully."
+        : "Seller rejected successfully.",
   };
 }

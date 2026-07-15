@@ -41,7 +41,7 @@ export default function AllProducts() {
 
     const getProducts = async () => {
       try {
-        const response = await fetch("/api/products");
+        const response = await fetch("/api/products/active");
         const result = await response.json();
 
         if (!response.ok) {

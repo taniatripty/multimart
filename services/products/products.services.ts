@@ -214,6 +214,52 @@ export async function getProductsService() {
   };
 }
 
+export async function getallActiveProductsService() {
+  const productCollection =
+    await getCollection<ProductDocument>(
+      collectionNames.PRODUCTS
+    );
+
+  const categoryCollection =
+    await getCollection(collectionNames.CATEGORIES);
+
+  const brandCollection =
+    await getCollection(collectionNames.BRANDS);
+
+  const products = await productCollection
+    .find({ status: "active",})
+    .sort({
+      createdAt: -1,
+    })
+    .toArray();
+
+  const data = await Promise.all(
+    products.map(async (product) => {
+      const category = await categoryCollection.findOne({
+        _id: new ObjectId(product.categoryId),
+      });
+
+      const brand = await brandCollection.findOne({
+        _id: new ObjectId(product.brandId),
+      });
+
+      return {
+        ...product,
+
+        categoryName: category?.name ?? "",
+
+        brandName: brand?.name ?? "",
+      };
+    })
+  );
+
+  return {
+    success: true,
+    status: 200,
+    data,
+  };
+}
+
 export async function getSingleProductService(id: string) {
   if (!ObjectId.isValid(id)) {
     return {
@@ -244,5 +290,78 @@ export async function getSingleProductService(id: string) {
     status: 200,
     message: "Product fetched successfully.",
     data: product,
+  };
+}
+
+export async function updateProductStatusService(
+  id: string,
+  status: "active" | "rejected"
+) {
+  if (!ObjectId.isValid(id)) {
+    return {
+      success: false,
+      status: 400,
+      message: "Invalid product id.",
+    };
+  }
+
+  if (!["active", "rejected"].includes(status)) {
+    return {
+      success: false,
+      status: 400,
+      message: "Invalid product status.",
+    };
+  }
+
+  const productCollection = await getCollection(
+    collectionNames.PRODUCTS
+  );
+
+  const product = await productCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!product) {
+    return {
+      success: false,
+      status: 404,
+      message: "Product not found.",
+    };
+  }
+
+  if (product.status === status) {
+    return {
+      success: false,
+      status: 409,
+      message: `Product is already ${status}.`,
+    };
+  }
+
+  const result = await productCollection.updateOne(
+    {
+      _id: new ObjectId(id),
+    },
+    {
+      $set: {
+        status,
+        updatedAt: new Date(),
+      },
+    }
+  );
+
+  if (!result.modifiedCount) {
+    return {
+      success: false,
+      status: 500,
+      message: "Failed to update product status.",
+    };
+  }
+
+  return {
+    success: true,
+    status: 200,
+    message: `Product ${
+      status === "active" ? "approved" : "rejected"
+    } successfully.`,
   };
 }
