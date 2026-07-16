@@ -11,7 +11,7 @@ export const adminRoutes=[
           url: "/admin-dashboard",
         },
         {
-          title: "Create Categories",
+          title: "Categories",
           url: "/adminDashboard/createCategories",
         },
          {
@@ -25,6 +25,10 @@ export const adminRoutes=[
          {
           title: "Manage seller",
           url: "/adminDashboard/manageSeller",
+        },
+        {
+          title: "Manage User",
+          url: "/adminDashboard/manageUsers",
         },
 
        

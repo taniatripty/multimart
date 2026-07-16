@@ -1,5 +1,6 @@
 import { collectionNames, getCollection } from "@/lib/dbConnect";
 import { UserRole ,SellerStatus} from "@/lib/types";
+import { ObjectId } from "mongodb";
 
 export async function getAllSellerService() {
   const userCollection = await getCollection(
@@ -10,6 +11,28 @@ export async function getAllSellerService() {
     .find({
       role: UserRole.SELLER,
     })
+    .project({
+      password: 0,
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .toArray();
+
+  return {
+    success: true,
+    status: 200,
+    message: "Sellers fetched successfully.",
+    data: sellers,
+  };
+}
+export async function getAllUserService() {
+  const userCollection = await getCollection(
+    collectionNames.TEST_USER
+  );
+
+  const sellers = await userCollection
+    .find({})
     .project({
       password: 0,
     })
@@ -49,5 +72,74 @@ export async function getAllApproveSellerService() {
     status: 200,
     message: "Sellers fetched successfully.",
     data: sellers,
+  };
+}
+
+export interface UpdateUserRolePayload {
+  id: string;
+  role: UserRole;
+}
+
+interface UserDocument {
+  _id: ObjectId;
+  role: UserRole;
+}
+
+export async function updateUserRoleService(
+  payload: UpdateUserRolePayload
+) {
+  if (!ObjectId.isValid(payload.id)) {
+    return {
+      success: false,
+      status: 400,
+      message: "Invalid user id.",
+    };
+  }
+
+  
+
+  const userCollection =
+    await getCollection<UserDocument>(
+      collectionNames.TEST_USER
+    );
+
+  const user = await userCollection.findOne({
+    _id: new ObjectId(payload.id),
+  });
+
+  if (!user) {
+    return {
+      success: false,
+      status: 404,
+      message: "User not found.",
+    };
+  }
+
+  // Don't allow changing seller role here
+  if (user.role === UserRole.SELLER) {
+    return {
+      success: false,
+      status: 400,
+      message:
+        "Seller accounts cannot be updated from this page.",
+    };
+  }
+
+  await userCollection.updateOne(
+    {
+      _id: new ObjectId(payload.id),
+    },
+    {
+      $set: {
+        role: payload.role,
+        updatedAt: new Date(),
+      },
+    }
+  );
+
+  return {
+    success: true,
+    status: 200,
+    message: `User role updated to ${payload.role}.`,
   };
 }
