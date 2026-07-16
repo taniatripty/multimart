@@ -1,5 +1,6 @@
 
 import { collectionNames, getCollection } from "@/lib/dbConnect";
+import { SellerStatus, UserRole } from "@/lib/types";
 import { ObjectId } from "mongodb";
 
 export interface CreateProductPayload {
@@ -67,6 +68,25 @@ export async function createProductService(
   payload: CreateProductPayload
 ) {
   const productCollection = await getCollection(collectionNames.PRODUCTS);
+  const userCollection = await getCollection(collectionNames.TEST_USER);
+  const seller = await userCollection.findOne({
+  _id: new ObjectId(payload.seller),
+});
+
+if (!seller) {
+  throw new Error("Seller account not found.");
+}
+if (seller.role !== UserRole.SELLER) {
+  throw new Error(
+    "Only registered sellers can create products."
+  );
+}
+
+ if (seller.sellerStatus !== SellerStatus.APPROVED) {
+  throw new Error(
+    "Your seller account has not been approved yet. Please wait for admin approval before creating products."
+  );
+}
 
   // Validation
   if (!payload.name.trim()) {

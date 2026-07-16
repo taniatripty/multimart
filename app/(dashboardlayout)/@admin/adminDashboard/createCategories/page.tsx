@@ -30,6 +30,7 @@ export default function CreateCategoryPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [image, setImage] = useState("");
+const [imageFile, setImageFile] = useState<File | null>(null);
   const [description, setDescription] = useState("");
   const [subCategoriesInput, setSubCategoriesInput] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -56,6 +57,36 @@ export default function CreateCategoryPage() {
 
     setLoading(true);
 
+    let imageUrl = "";
+
+if (imageFile) {
+  const formData = new FormData();
+
+  formData.append("file", imageFile);
+  formData.append(
+    "upload_preset",
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!
+  );
+
+  const uploadRes = await fetch(
+    `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  const uploadResult = await uploadRes.json();
+
+  if (!uploadResult.secure_url) {
+    throw new Error("Image upload failed.");
+  }
+
+  imageUrl = uploadResult.secure_url;
+
+  setImage(imageUrl);
+}
+
     try {
       // Convert comma-separated input to string[]
       const subCategories = subCategoriesInput
@@ -66,7 +97,7 @@ export default function CreateCategoryPage() {
       const payload: CreateCategoryPayload = {
         name,
         slug,
-        image,
+        image: imageUrl,
         description,
         subCategories, // string[]
         isActive,
@@ -154,20 +185,30 @@ export default function CreateCategoryPage() {
             </div>
 
             {/* Image URL */}
-            <div>
-              <Label>Image URL</Label>
+           <div>
+  <Label>Category Image</Label>
 
-              <div className="relative mt-2">
-                <ImageIcon className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+  <div className="relative mt-2">
+    <ImageIcon className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
 
-                <Input
-                  className="pl-10"
-                  placeholder="https://..."
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                />
-              </div>
-            </div>
+    <Input
+      className="pl-10"
+      type="file"
+      accept="image/*"
+      onChange={(e) =>
+        setImageFile(e.target.files?.[0] ?? null)
+      }
+    />
+  </div>
+
+  {image && (
+    <img
+      src={image}
+      alt="Preview"
+      className="mt-4 h-28 w-28 rounded-lg border object-cover"
+    />
+  )}
+</div>
 
             {/* Description */}
             <div>

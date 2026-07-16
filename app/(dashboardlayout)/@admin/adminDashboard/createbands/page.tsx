@@ -1,13 +1,8 @@
+
 "use client";
 
-import { FormEvent, useState } from "react";
-import {
-  BadgeCheck,
-  FileText,
-  Globe,
-  ImageIcon,
-  Tag,
-} from "lucide-react";
+import { FormEvent, useState, ChangeEvent } from "react";
+import { BadgeCheck, FileText, Globe, Tag } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,10 +16,10 @@ export default function CreateBrandPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [logo, setLogo] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [website, setWebsite] = useState("");
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
-
   const [loading, setLoading] = useState(false);
 
   const handleNameChange = (value: string) => {
@@ -38,10 +33,54 @@ export default function CreateBrandPage() {
     );
   };
 
-  const handleSubmit = async (
-    e: FormEvent<HTMLFormElement>
+  const handleLogoUpload = async (
+    e: ChangeEvent<HTMLInputElement>
   ) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    setUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append(
+        "upload_preset",
+        process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!
+      );
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error?.message || "Upload failed");
+      }
+
+      setLogo(data.secure_url);
+      toast.success("Logo uploaded successfully.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to upload logo.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!logo) {
+      toast.error("Please upload a brand logo.");
+      return;
+    }
 
     setLoading(true);
 
@@ -72,6 +111,7 @@ export default function CreateBrandPage() {
 
       toast.success(result.message);
 
+      // Reset form
       setName("");
       setSlug("");
       setLogo("");
@@ -91,19 +131,14 @@ export default function CreateBrandPage() {
       <Card className="mx-auto max-w-3xl shadow-lg">
         <CardContent className="space-y-6 p-8">
           <div>
-            <h1 className="text-3xl font-bold">
-              Create Brand
-            </h1>
+            <h1 className="text-3xl font-bold">Create Brand</h1>
 
             <p className="mt-2 text-muted-foreground">
               Add a new brand to your marketplace.
             </p>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-6"
-          >
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Brand Name */}
             <div>
               <Label>Brand Name</Label>
@@ -115,9 +150,7 @@ export default function CreateBrandPage() {
                   className="pl-10"
                   placeholder="Apple"
                   value={name}
-                  onChange={(e) =>
-                    handleNameChange(e.target.value)
-                  }
+                  onChange={(e) => handleNameChange(e.target.value)}
                   required
                 />
               </div>
@@ -133,9 +166,7 @@ export default function CreateBrandPage() {
                 <Input
                   className="pl-10"
                   value={slug}
-                  onChange={(e) =>
-                    setSlug(e.target.value)
-                  }
+                  onChange={(e) => setSlug(e.target.value)}
                   required
                 />
               </div>
@@ -143,19 +174,35 @@ export default function CreateBrandPage() {
 
             {/* Logo */}
             <div>
-              <Label>Logo URL</Label>
+              <Label>Brand Logo</Label>
 
-              <div className="relative mt-2">
-                <ImageIcon className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
-
+              <div className="mt-2 space-y-3">
                 <Input
-                  className="pl-10"
-                  placeholder="https://..."
-                  value={logo}
-                  onChange={(e) =>
-                    setLogo(e.target.value)
-                  }
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                  disabled={uploading}
                 />
+
+                {uploading && (
+                  <p className="text-sm text-muted-foreground">
+                    Uploading image...
+                  </p>
+                )}
+
+                {logo && (
+                  <div className="space-y-2">
+                    <img
+                      src={logo}
+                      alt="Brand Logo"
+                      className="h-24 w-24 rounded-lg border object-cover"
+                    />
+
+                    <p className="break-all text-xs text-muted-foreground">
+                      {logo}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -170,9 +217,7 @@ export default function CreateBrandPage() {
                   className="pl-10"
                   placeholder="https://apple.com"
                   value={website}
-                  onChange={(e) =>
-                    setWebsite(e.target.value)
-                  }
+                  onChange={(e) => setWebsite(e.target.value)}
                 />
               </div>
             </div>
@@ -188,9 +233,7 @@ export default function CreateBrandPage() {
                   className="min-h-32 pl-10 pt-3"
                   placeholder="Write brand description..."
                   value={description}
-                  onChange={(e) =>
-                    setDescription(e.target.value)
-                  }
+                  onChange={(e) => setDescription(e.target.value)}
                 />
               </div>
             </div>
@@ -214,11 +257,9 @@ export default function CreateBrandPage() {
             <Button
               type="submit"
               className="w-full"
-              disabled={loading}
+              disabled={loading || uploading}
             >
-              {loading
-                ? "Creating..."
-                : "Create Brand"}
+              {loading ? "Creating..." : "Create Brand"}
             </Button>
           </form>
         </CardContent>
