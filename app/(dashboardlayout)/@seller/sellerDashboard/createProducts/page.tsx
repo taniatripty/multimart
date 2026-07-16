@@ -55,7 +55,7 @@ type ProductFormValues = {
   features: string;
   thumbnail: string;
   thumbnailFile: File | null;
-  featured: boolean;
+  
   active: boolean;
 };
 
@@ -74,7 +74,7 @@ const defaultFormValues: ProductFormValues = {
   features: "",
   thumbnail: "",
   thumbnailFile: null,
-  featured: false,
+ 
   active: true,
 };
 
@@ -247,7 +247,7 @@ export default function CreateProductForm() {
         salePrice: salePrice ? Number(salePrice) : undefined,
         stock: Number(form.stock),
         thumbnail: uploadedImageUrl || undefined,
-        featured: form.featured,
+        
         active: form.active,
         seller: sellerId,
 
@@ -572,19 +572,8 @@ export default function CreateProductForm() {
           </div>
 
           {/* Featured / Active */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between rounded-lg border p-3">
-              <div className="space-y-0.5">
-                <div className="text-sm font-medium">Featured</div>
-                <div className="text-xs text-muted-foreground">
-                  Show on featured section
-                </div>
-              </div>
-              <Switch
-                checked={form.featured}
-                onCheckedChange={(checked) => updateForm("featured", checked)}
-              />
-            </div>
+          <div className="">
+           
 
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="space-y-0.5">

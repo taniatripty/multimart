@@ -38,7 +38,7 @@ interface ProductDocument {
   brandId: string;
 
   sellerId: string;
-  storeId?: string;
+ 
 
   price: number;
   discount: number;
@@ -149,7 +149,7 @@ if (seller.role !== UserRole.SELLER) {
 
     // Seller
     sellerId: payload.seller,
-    storeId: "",
+   
 
     // Pricing
     price: payload.price,

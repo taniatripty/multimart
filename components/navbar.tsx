@@ -25,7 +25,7 @@ const menu = [
   { title: "Become a seller", href: "/becomeSeller" },
   { title: "Deals", href: "/deals" },
   { title: "Brands", href: "/brands" },
-  { title: "Vendors", href: "/vendors" },
+  { title: "seller", href: "/allSeller" },
   { title: "Contact", href: "/contact" },
   { title: "About Us", href: "/aboutUs" },
 ];
