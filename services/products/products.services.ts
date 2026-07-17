@@ -385,3 +385,66 @@ export async function updateProductStatusService(
     } successfully.`,
   };
 }
+interface MyProductDocument {
+  _id: ObjectId;
+  sellerId: string;
+  createdAt: Date;
+}
+
+export async function getMyProductsService(
+  sellerId: string
+) {
+  if (!ObjectId.isValid(sellerId)) {
+    return {
+      success: false,
+      status: 400,
+      message: "Invalid seller id.",
+    };
+  }
+
+  const productCollection =
+    await getCollection<ProductDocument>(
+      collectionNames.PRODUCTS
+    );
+
+  const categoryCollection =
+    await getCollection(collectionNames.CATEGORIES);
+
+  const brandCollection =
+    await getCollection(collectionNames.BRANDS);
+
+  const products = await productCollection
+    .find({
+      sellerId,
+    })
+    .sort({
+      createdAt: -1,
+    })
+    .toArray();
+
+  const data = await Promise.all(
+    products.map(async (product) => {
+      const category =
+        await categoryCollection.findOne({
+          _id: new ObjectId(product.categoryId),
+        });
+
+      const brand =
+        await brandCollection.findOne({
+          _id: new ObjectId(product.brandId),
+        });
+
+      return {
+        ...product,
+        categoryName: category?.name ?? "",
+        brandName: brand?.name ?? "",
+      };
+    })
+  );
+
+  return {
+    success: true,
+    status: 200,
+    data,
+  };
+}

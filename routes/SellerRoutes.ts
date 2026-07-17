@@ -14,6 +14,10 @@ export const sellerRoutes=[
           title: "Create Products",
           url: "/sellerDashboard/createProducts",
         },
+        {
+          title: "Manage Products",
+          url: "/sellerDashboard/manageProducts",
+        },
        
          
     ]}
