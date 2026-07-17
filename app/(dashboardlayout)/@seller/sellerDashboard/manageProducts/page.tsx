@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Package, Pencil, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { Pencil, Trash2, Package } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import Swal from "sweetalert2";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,12 +37,9 @@ export default function MyProductsPage() {
 
     const fetchProducts = async () => {
       try {
-        const res = await fetch(
-          `/api/products/my/${session.user.id}`,
-          {
-            cache: "no-store",
-          }
-        );
+        const res = await fetch(`/api/products/my/${session.user.id}`, {
+          cache: "no-store",
+        });
 
         const result = await res.json();
 
@@ -61,61 +59,78 @@ export default function MyProductsPage() {
   }, [session]);
 
   const handleDelete = async (id: string) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this product?"
-    );
+    const result = await Swal.fire({
+      title: "Delete Product?",
+      text: "You can restore this product later from the admin panel.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+    });
 
-    if (!confirmed) return;
+    if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`/api/products/${id}`, {
-        method: "DELETE",
+      const res = await fetch(`/api/products/delete/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: "deleted",
+        }),
       });
 
-      const result = await res.json();
+      const data = await res.json();
 
-      if (!res.ok) {
-        toast.error(result.message);
+      if (!res.ok || !data.success) {
+        await Swal.fire({
+          title: "Failed!",
+          text: data.message || "Failed to delete product.",
+          icon: "error",
+        });
+
         return;
       }
 
-      toast.success(result.message);
+      setProducts((prev) => prev.filter((product) => product._id !== id));
 
-      setProducts((prev) =>
-        prev.filter((item) => item._id !== id)
-      );
+      await Swal.fire({
+        title: "Deleted!",
+        text: "Your product has been deleted successfully.",
+        icon: "success",
+        timer: 1800,
+        showConfirmButton: false,
+      });
     } catch {
-      toast.error("Failed to delete product.");
+      await Swal.fire({
+        title: "Error!",
+        text: "Something went wrong. Please try again.",
+        icon: "error",
+      });
     }
   };
 
   if (loading) {
-    return (
-      <div className="py-20 text-center">
-        Loading products...
-      </div>
-    );
+    return <div className="py-20 text-center">Loading products...</div>;
   }
 
   return (
     <section className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">
-          My Products
-        </h1>
+        <h1 className="text-3xl font-bold">My Products</h1>
 
-        <p className="text-muted-foreground">
-          Manage all your products.
-        </p>
+        <p className="text-muted-foreground">Manage all your products.</p>
       </div>
 
       {products.length === 0 ? (
         <div className="rounded-lg border py-20 text-center">
           <Package className="mx-auto mb-4 h-14 w-14 text-muted-foreground" />
 
-          <h2 className="text-xl font-semibold">
-            No Products Found
-          </h2>
+          <h2 className="text-xl font-semibold">No Products Found</h2>
 
           <p className="mt-2 text-muted-foreground">
             Start by creating your first product.
@@ -124,10 +139,7 @@ export default function MyProductsPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
-            <Card
-              key={product._id}
-              className="overflow-hidden"
-            >
+            <Card key={product._id} className="overflow-hidden">
               <Image
                 src={product.thumbnail}
                 alt={product.name}
@@ -155,9 +167,7 @@ export default function MyProductsPage() {
                   <div className="flex justify-between">
                     <span>Price</span>
 
-                    <span className="font-semibold">
-                      ৳{product.price}
-                    </span>
+                    <span className="font-semibold">৳{product.price}</span>
                   </div>
 
                   <div className="flex justify-between">
@@ -177,30 +187,42 @@ export default function MyProductsPage() {
                   <div className="flex justify-between">
                     <span>Status</span>
 
-                    <span
+                    {/* <span
                       className={`rounded-full px-2 py-1 text-xs font-medium
                       ${
                         product.status === "active"
                           ? "bg-green-100 text-green-700"
                           : product.status === "pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
                       }`}
                     >
                       {product.status}
-                    </span>
+                    </span> */}
+
+                    <span
+  className={`rounded-full px-2 py-1 text-xs font-medium ${
+    product.status === "active"
+      ? "bg-green-100 text-green-700"
+      : product.status === "pending"
+      ? "bg-yellow-100 text-yellow-700"
+      : product.status === "rejected"
+      ? "bg-red-100 text-red-700"
+      : product.status === "deleted"
+      ? "bg-gray-200 text-gray-700"
+      : "bg-slate-100 text-slate-700"
+  }`}
+>
+  {product.status}
+</span>
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <Button
-                    asChild
-                    className="flex-1"
-                    variant="outline"
+                {/* <div className="flex gap-3">
+                  <Button asChild className="flex-1" variant="outline" 
+                  
                   >
-                    <Link
-                      href={`/sellerDashboard/editProduct/${product._id}`}
-                    >
+                    <Link href={`/sellerDashboard/editProduct/${product._id}`}>
                       <Pencil className="mr-2 h-4 w-4" />
                       Edit
                     </Link>
@@ -209,14 +231,71 @@ export default function MyProductsPage() {
                   <Button
                     className="flex-1"
                     variant="destructive"
-                    onClick={() =>
-                      handleDelete(product._id)
+                    disabled={
+                      product.status === "rejected" ||
+                      product.status === "deleted"
                     }
+                    onClick={() => handleDelete(product._id)}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                   </Button>
-                </div>
+                </div> */}
+
+                <div className="flex gap-3">
+  {/* Edit Button */}
+  <Button
+    asChild={
+      product.status !== "rejected" &&
+      product.status !== "deleted"
+    }
+    className="flex-1"
+    variant={
+      product.status === "rejected" ||
+      product.status === "deleted"
+        ? "secondary"
+        : "outline"
+    }
+    disabled={
+      product.status === "rejected" ||
+      product.status === "deleted"
+    }
+  >
+    {product.status === "rejected" ||
+    product.status === "deleted" ? (
+      <span className="flex items-center justify-center">
+        <Pencil className="mr-2 h-4 w-4" />
+        Edit
+      </span>
+    ) : (
+      <Link
+        href={`/sellerDashboard/editProduct/${product._id}`}
+      >
+        <Pencil className="mr-2 h-4 w-4" />
+        Edit
+      </Link>
+    )}
+  </Button>
+
+  {/* Delete Button */}
+  <Button
+    className={`flex-1 ${
+      product.status === "rejected" ||
+      product.status === "deleted"
+        ? "cursor-not-allowed bg-gray-300 text-gray-500 hover:bg-gray-300"
+        : ""
+    }`}
+    variant="destructive"
+    disabled={
+      product.status === "rejected" ||
+      product.status === "deleted"
+    }
+    onClick={() => handleDelete(product._id)}
+  >
+    <Trash2 className="mr-2 h-4 w-4" />
+    Delete
+  </Button>
+</div>
               </CardContent>
             </Card>
           ))}

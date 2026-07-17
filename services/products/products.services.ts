@@ -448,3 +448,70 @@ export async function getMyProductsService(
     data,
   };
 }
+
+export async function deleteProductService(
+  id: string,
+  status: string
+) {
+  if (!ObjectId.isValid(id)) {
+    return {
+      success: false,
+      status: 400,
+      message: "Invalid product id.",
+    };
+  }
+
+  const productCollection =
+    await getCollection<ProductDocument>(
+      collectionNames.PRODUCTS
+    );
+
+  const product = await productCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!product) {
+    return {
+      success: false,
+      status: 404,
+      message: "Product not found.",
+    };
+  }
+
+  // Already deleted
+  if (product.status === "deleted") {
+    return {
+      success: false,
+      status: 400,
+      message: "This product has already been deleted.",
+    };
+  }
+
+  // Rejected products cannot be deleted
+  if (product.status === "rejected") {
+    return {
+      success: false,
+      status: 400,
+      message:
+        "Rejected products cannot be deleted. Please contact the administrator if you believe this is a mistake.",
+    };
+  }
+
+  await productCollection.updateOne(
+    {
+      _id: new ObjectId(id),
+    },
+    {
+      $set: {
+        status: "deleted",
+        updatedAt: new Date(),
+      },
+    }
+  );
+
+  return {
+    success: true,
+    status: 200,
+    message: "Product deleted successfully.",
+  };
+}

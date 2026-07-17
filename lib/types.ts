@@ -10,6 +10,7 @@ export enum SellerStatus {
   PENDING = "pending",
   APPROVED = "approved",
   REJECTED = "rejected",
+ 
 }
 
 export interface UserDocument {
