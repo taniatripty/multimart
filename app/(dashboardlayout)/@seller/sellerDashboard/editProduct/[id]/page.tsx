@@ -78,12 +78,11 @@ const defaultFormValues: ProductFormValues = {
 };
 
 type EditProductFormProps = {
-  /** Optional: called after successful update, e.g. to redirect or refresh */
   onSuccess?: () => void;
 };
 
 export default function EditProductForm({ onSuccess }: EditProductFormProps) {
-  const { id } = useParams(); // e.g. /products/[id]/edit → id = product._id
+  const { id } = useParams(); // from /products/[id]/edit
   const productId = id as string | undefined;
 
   const { data: session } = useSession();
@@ -130,7 +129,7 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
     loadData();
   }, []);
 
-  // Load existing product from /api/products/:productId
+  // Load existing product
   useEffect(() => {
     if (!productId) return;
 
@@ -144,9 +143,9 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
           name: product.name ?? "",
           shortDescription: product.shortDescription ?? "",
           description: product.description ?? "",
-          category: product.category ?? "",
+          category: product.categoryId ?? product.category ?? "",
           subcategory: product.subcategory ?? "",
-          brand: product.brand ?? "",
+          brand: product.brandId ?? product.brand ?? "",
           price: String(product.price ?? ""),
           discount: String(product.discount ?? ""),
           stock: String(product.stock ?? ""),
@@ -161,7 +160,10 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
             : product.features ?? "",
           thumbnail: product.thumbnail ?? "",
           thumbnailFile: null,
-          active: !!product.active,
+          active:
+            typeof product.active === "boolean"
+              ? product.active
+              : !!product.active,
         });
 
         if (product.thumbnail) {
@@ -195,9 +197,9 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
           name: product.name ?? "",
           shortDescription: product.shortDescription ?? "",
           description: product.description ?? "",
-          category: product.category ?? "",
+          category: product.categoryId ?? product.category ?? "",
           subcategory: product.subcategory ?? "",
-          brand: product.brand ?? "",
+          brand: product.brandId ?? product.brand ?? "",
           price: String(product.price ?? ""),
           discount: String(product.discount ?? ""),
           stock: String(product.stock ?? ""),
@@ -212,7 +214,10 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
             : product.features ?? "",
           thumbnail: product.thumbnail ?? "",
           thumbnailFile: null,
-          active: !!product.active,
+          active:
+            typeof product.active === "boolean"
+              ? product.active
+              : !!product.active,
         });
         if (product.thumbnail) {
           setImagePreview(product.thumbnail);
@@ -281,12 +286,8 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!productId) {
-      toast.error("Product ID not found.");
-      return;
-    }
+   
 
-    // Basic validation
     if (!form.name.trim()) {
       toast.error("Product name is required.");
       return;
@@ -311,17 +312,13 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
       toast.error("Discount must be between 0 and 100.");
       return;
     }
-    if (!sellerId) {
-      toast.error("Seller not found. Please log in again.");
-      return;
-    }
+   
 
     setIsSubmitting(true);
 
     try {
       let uploadedImageUrl = form.thumbnail;
 
-      // Upload image only if a new file is selected
       if (form.thumbnailFile) {
         setIsUploadingImage(true);
         const result = await uploadImageToCloudinary(form.thumbnailFile);
@@ -329,6 +326,7 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
         setIsUploadingImage(false);
       }
 
+      // ✅ This payload has ONLY product fields (no productId, no sellerId)
       const payload = {
         name: form.name,
         shortDescription: form.shortDescription,
@@ -342,7 +340,6 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
         stock: Number(form.stock),
         thumbnail: uploadedImageUrl || undefined,
         active: form.active,
-        seller: sellerId,
 
         colors: form.colors
           ? form.colors
@@ -364,9 +361,9 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
           : undefined,
       };
 
-      // Update via /api/products/:productId
-      const res = await fetch(`/api/products/${productId}`, {
-        method: "PUT", // or "PATCH" depending on your API
+      // ✅ productId is only in the URL, NOT in the body
+      const res = await fetch(`/api/products/edit/${productId}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -720,7 +717,9 @@ export default function EditProductForm({ onSuccess }: EditProductFormProps) {
               type="submit"
               disabled={isSubmitting || isUploadingImage || isLoading}
             >
-              {(isSubmitting || isUploadingImage) ? "Updating..." : "Save Changes"}
+              {(isSubmitting || isUploadingImage)
+                ? "Updating..."
+                : "Save Changes"}
             </Button>
           </div>
         </form>

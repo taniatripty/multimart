@@ -1,167 +1,169 @@
 import { collectionNames, getCollection } from "@/lib/dbConnect";
-import { SellerStatus, UserRole } from "@/lib/types";
 import { ObjectId } from "mongodb";
 
-
-export type UpdateProductPayload = {
+export interface UpdateProductPayload {
   name?: string;
   shortDescription?: string;
   description?: string;
-  category?: string;
 
+  category?: string;
   subcategory?: string;
-  
-  brandId?:string,
-  salePrice?:number,
+
+  brand?: string;
+
   price?: number;
   discount?: number;
   stock?: number;
+
   thumbnail?: string;
+
   colors?: string[];
   sizes?: string[];
   features?: string[];
-  active?: boolean; // if you want to control visibility separately
-  seller: string; // seller ID (string)
-};
+}
+
+interface ProductDocument {
+  _id?: ObjectId;
+
+  name: string;
+  shortDescription: string;
+  description: string;
+
+  categoryId: string;
+  subcategory: string;
+
+  brandId: string;
+
+  sellerId: string;
+  storeId?: string;
+
+  price: number;
+  discount: number;
+  salePrice: number;
+
+  stock: number;
+
+  thumbnail: string;
+
+  colors: string[];
+  sizes: string[];
+  features: string[];
+
+  status: string;
+
+  averageRating: number;
+  totalReviews: number;
+  totalSold: number;
+  views: number;
+
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 export async function updateProductService(
-  productId: string,
+  id: string,
   payload: UpdateProductPayload
 ) {
-  const productCollection = await getCollection(collectionNames.PRODUCTS);
-  const userCollection = await getCollection(collectionNames.TEST_USER);
-
-  const productObjectId = new ObjectId(productId);
-  const existingProduct = await productCollection.findOne({
-    _id: productObjectId,
-  });
-
-  if (!existingProduct) {
-    throw new Error("Product not found.");
+  if (!ObjectId.isValid(id)) {
+    return {
+      success: false,
+      status: 400,
+      message: "Invalid product id.",
+    };
   }
 
-  // Ensure seller ownership
-  if (existingProduct.sellerId !== payload.seller) {
-    throw new Error("You are not authorized to update this product.");
-  }
-
-  const seller = await userCollection.findOne({
-    _id: new ObjectId(payload.seller),
-  });
-
-  if (!seller) {
-    throw new Error("Seller account not found.");
-  }
-
-  if (seller.role !== UserRole.SELLER) {
-    throw new Error("Only registered sellers can update products.");
-  }
-
-  if (seller.sellerStatus !== SellerStatus.APPROVED) {
-    throw new Error(
-      "Your seller account has not been approved yet. Please wait for admin approval before updating products."
+  const productCollection =
+    await getCollection<ProductDocument>(
+      collectionNames.PRODUCTS
     );
+
+  const product = await productCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!product) {
+    return {
+      success: false,
+      status: 404,
+      message: "Product not found.",
+    };
   }
 
-  // Build update object only with provided fields
-  const updateDoc: Partial<UpdateProductPayload & { updatedAt: Date }> = {
-    updatedAt: new Date(),
-  };
+  const updateData: Partial<ProductDocument> = {};
 
-  if (payload.name !== undefined) {
-    if (!payload.name.trim()) {
-      throw new Error("Product name cannot be empty.");
-    }
-    updateDoc.name = payload.name;
-  }
+  if (payload.name !== undefined)
+    updateData.name = payload.name.trim();
 
-  if (payload.shortDescription !== undefined) {
-    updateDoc.shortDescription = payload.shortDescription || "";
-  }
+  if (payload.shortDescription !== undefined)
+    updateData.shortDescription =
+      payload.shortDescription;
 
-  if (payload.description !== undefined) {
-    updateDoc.description = payload.description || "";
-  }
+  if (payload.description !== undefined)
+    updateData.description =
+      payload.description;
 
- 
+  if (payload.category !== undefined)
+    updateData.categoryId = payload.category;
 
-  if (payload.subcategory !== undefined) {
-    updateDoc.subcategory = payload.subcategory || "";
-  }
+  if (payload.subcategory !== undefined)
+    updateData.subcategory =
+      payload.subcategory;
 
-  
+  if (payload.brand !== undefined)
+    updateData.brandId = payload.brand;
 
-  if (payload.price !== undefined) {
-    if (payload.price <= 0) {
-      throw new Error("Price must be greater than 0.");
-    }
-    updateDoc.price = payload.price;
-  }
+  if (payload.price !== undefined)
+    updateData.price = payload.price;
 
-  if (payload.discount !== undefined) {
-    if (payload.discount < 0 || payload.discount > 100) {
-      throw new Error("Discount must be between 0 and 100.");
-    }
-    updateDoc.discount = payload.discount;
-  }
+  if (payload.discount !== undefined)
+    updateData.discount = payload.discount;
 
-  if (payload.stock !== undefined) {
-    if (payload.stock < 0) {
-      throw new Error("Stock cannot be negative.");
-    }
-    updateDoc.stock = payload.stock;
-  }
+  if (payload.stock !== undefined)
+    updateData.stock = payload.stock;
 
-  if (payload.thumbnail !== undefined) {
-    updateDoc.thumbnail = payload.thumbnail || "";
-  }
+  if (payload.thumbnail !== undefined)
+    updateData.thumbnail = payload.thumbnail;
 
-  if (payload.colors !== undefined) {
-    updateDoc.colors = payload.colors || [];
-  }
+  if (payload.colors !== undefined)
+    updateData.colors = payload.colors;
 
-  if (payload.sizes !== undefined) {
-    updateDoc.sizes = payload.sizes || [];
-  }
+  if (payload.sizes !== undefined)
+    updateData.sizes = payload.sizes;
 
-  if (payload.features !== undefined) {
-    updateDoc.features = payload.features || [];
-  }
+  if (payload.features !== undefined)
+    updateData.features = payload.features;
 
-  if (payload.active !== undefined) {
-    // If you have a separate `active` field; otherwise ignore or map to status
-    updateDoc.active = payload.active;
-  }
+  // Recalculate sale price
+  const price =
+    updateData.price ?? product.price;
 
-  // Recalculate salePrice if price/discount changed
-  const currentPrice =
-    updateDoc.price ?? (existingProduct.price as number);
-  const currentDiscount =
-    updateDoc.discount ?? (existingProduct.discount as number);
+  const discount =
+    updateData.discount ?? product.discount;
 
-  const salePrice =
-    currentDiscount > 0
+  updateData.salePrice =
+    discount > 0
       ? Number(
           (
-            currentPrice -
-            currentPrice * (currentDiscount / 100)
+            price -
+            price * (discount / 100)
           ).toFixed(2)
         )
-      : currentPrice;
+      : price;
 
-  updateDoc.salePrice = salePrice;
+  updateData.updatedAt = new Date();
 
-  const result = await productCollection.updateOne(
-    { _id: productObjectId },
-    { $set: updateDoc }
+  await productCollection.updateOne(
+    {
+      _id: new ObjectId(id),
+    },
+    {
+      $set: updateData,
+    }
   );
-
-  if (result.modifiedCount === 0 && result.matchedCount === 0) {
-    throw new Error("Failed to update product.");
-  }
 
   return {
     success: true,
-    productId,
+    status: 200,
+    message: "Product updated successfully.",
   };
 }

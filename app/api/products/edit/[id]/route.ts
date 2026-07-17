@@ -1,61 +1,40 @@
+import { updateProductService } from "@/services/products/editProdut/editproduct.services";
 import { NextRequest, NextResponse } from "next/server";
 
-import { updateProductService } from "@/services/products/editProdut/editproduct.services";
 
 export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  {
+    params,
+  }: {
+    params: Promise<{ id: string }>;
+  }
 ) {
   try {
-   
+    const { id } = await params;
 
-   
+    const body = await request.json();
 
-    const productId = params.id;
+    const result = await updateProductService(id, body);
 
-    if (!productId) {
-      return NextResponse.json(
-        { success: false, message: "Product ID is required." },
-        { status: 400 }
-      );
-    }
-
-    const body = await req.json();
-
-    // Map frontend fields to service payload
-    const payload = {
-      name: body.name,
-      shortDescription: body.shortDescription,
-      description: body.description,
-      
-      subcategory: body.subcategory,
-      
-      price: body.price,
-      discount: body.discount,
-      stock: body.stock,
-      thumbnail: body.thumbnail,
-      colors: body.colors,
-      sizes: body.sizes,
-      features: body.features,
-      active: body.active,
-     sellerId:body.id
-    };
-
-    const result = await updateProductService(productId, payload);
+    return NextResponse.json(result, {
+      status: result.status,
+    });
+  } catch (error) {
+    console.error(error);
 
     return NextResponse.json(
-      { success: true, data: result },
-      { status: 200 }
-    );
-  } catch (error: unknown) {
-    console.error("Update product error:", error);
-
-    const message =
-      error instanceof Error ? error.message : "Failed to update product.";
-
-    return NextResponse.json(
-      { success: false, message },
-      { status: 400 }
+      {
+        success: false,
+        status: 500,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Internal server error.",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
