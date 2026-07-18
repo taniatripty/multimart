@@ -10,7 +10,15 @@ export const userRoutes=[
           title: "All purchases",
           url: "/admin-dashboard",
         },
-       
+         {
+          title: "My All Wishlist",
+          url: "/userDashboard/wishList",
+        },
+        {
+          title: "Add to Cart Product",
+          url: "/userDashboard/addToCart",
+        },
+        
          
     ]}
 ]

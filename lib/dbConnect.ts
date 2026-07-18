@@ -8,7 +8,8 @@ export const collectionNames = {
   TEST_USER: "users",
   CATEGORIES:"categories",
   BRANDS:"brands",
-  PRODUCTS:"products"
+  PRODUCTS:"products",
+  WISHLIST:"wishlist",
 };
 
 if (!uri) {

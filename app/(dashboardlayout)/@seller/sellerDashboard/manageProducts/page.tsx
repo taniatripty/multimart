@@ -186,50 +186,67 @@ export default function MyProductsPage() {
 
                   <div className="flex justify-between">
                     <span>Status</span>
-
-                    {/* <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium
-                      ${
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${
                         product.status === "active"
                           ? "bg-green-100 text-green-700"
                           : product.status === "pending"
                             ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
+                            : product.status === "rejected"
+                              ? "bg-red-100 text-red-700"
+                              : product.status === "deleted"
+                                ? "bg-gray-200 text-gray-700"
+                                : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {product.status}
-                    </span> */}
-
-                    <span
-  className={`rounded-full px-2 py-1 text-xs font-medium ${
-    product.status === "active"
-      ? "bg-green-100 text-green-700"
-      : product.status === "pending"
-      ? "bg-yellow-100 text-yellow-700"
-      : product.status === "rejected"
-      ? "bg-red-100 text-red-700"
-      : product.status === "deleted"
-      ? "bg-gray-200 text-gray-700"
-      : "bg-slate-100 text-slate-700"
-  }`}
->
-  {product.status}
-</span>
+                    </span>
                   </div>
                 </div>
 
-                {/* <div className="flex gap-3">
-                  <Button asChild className="flex-1" variant="outline" 
-                  
+                <div className="flex gap-3">
+                  {/* Edit Button */}
+                  <Button
+                    asChild={
+                      product.status !== "rejected" &&
+                      product.status !== "deleted"
+                    }
+                    className="flex-1"
+                    variant={
+                      product.status === "rejected" ||
+                      product.status === "deleted"
+                        ? "secondary"
+                        : "outline"
+                    }
+                    disabled={
+                      product.status === "rejected" ||
+                      product.status === "deleted"
+                    }
                   >
-                    <Link href={`/sellerDashboard/editProduct/${product._id}`}>
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Edit
-                    </Link>
+                    {product.status === "rejected" ||
+                    product.status === "deleted" ? (
+                      <span className="flex items-center  cursor-not-allowed   disabled:pointer-events-auto disabled:cursor-not-allowed justify-center">
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </span>
+                    ) : (
+                      <Link
+                        href={`/sellerDashboard/editProduct/${product._id}`}
+                      >
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit
+                      </Link>
+                    )}
                   </Button>
 
+                  {/* Delete Button */}
                   <Button
-                    className="flex-1"
+                    className={`flex-1  disabled:pointer-events-auto disabled:cursor-not-allowed  ${
+                      product.status === "rejected" ||
+                      product.status === "deleted"
+                        ? " bg-gray-300 text-gray-500 hover:bg-gray-300"
+                        : ""
+                    }`}
                     variant="destructive"
                     disabled={
                       product.status === "rejected" ||
@@ -240,62 +257,7 @@ export default function MyProductsPage() {
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                   </Button>
-                </div> */}
-
-                <div className="flex gap-3">
-  {/* Edit Button */}
-  <Button
-    asChild={
-      product.status !== "rejected" &&
-      product.status !== "deleted"
-    }
-    className="flex-1"
-    variant={
-      product.status === "rejected" ||
-      product.status === "deleted"
-        ? "secondary"
-        : "outline"
-    }
-    disabled={
-      product.status === "rejected" ||
-      product.status === "deleted"
-    }
-  >
-    {product.status === "rejected" ||
-    product.status === "deleted" ? (
-      <span className="flex items-center justify-center">
-        <Pencil className="mr-2 h-4 w-4" />
-        Edit
-      </span>
-    ) : (
-      <Link
-        href={`/sellerDashboard/editProduct/${product._id}`}
-      >
-        <Pencil className="mr-2 h-4 w-4" />
-        Edit
-      </Link>
-    )}
-  </Button>
-
-  {/* Delete Button */}
-  <Button
-    className={`flex-1 ${
-      product.status === "rejected" ||
-      product.status === "deleted"
-        ? "cursor-not-allowed bg-gray-300 text-gray-500 hover:bg-gray-300"
-        : ""
-    }`}
-    variant="destructive"
-    disabled={
-      product.status === "rejected" ||
-      product.status === "deleted"
-    }
-    onClick={() => handleDelete(product._id)}
-  >
-    <Trash2 className="mr-2 h-4 w-4" />
-    Delete
-  </Button>
-</div>
+                </div>
               </CardContent>
             </Card>
           ))}
