@@ -1,19 +1,27 @@
-import { getUserAddressService } from "@/services/address/address.services";
+import { getMyOrdersService } from "@/services/orders/orders.services";
 import { NextRequest, NextResponse } from "next/server";
 
 
+
+interface RouteProps {
+  params: Promise<{
+    userId: string;
+  }>;
+}
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: RouteProps
 ) {
   try {
     const { userId } = await params;
 
-    const address = await getUserAddressService(userId);
+    const orders = await getMyOrdersService(userId);
 
     return NextResponse.json({
       success: true,
-      data: address,
+      message: "Orders fetched successfully.",
+      data: orders,
     });
   } catch (error) {
     return NextResponse.json(
@@ -22,7 +30,7 @@ export async function GET(
         message:
           error instanceof Error
             ? error.message
-            : "Failed to fetch address.",
+            : "Failed to fetch orders.",
       },
       {
         status: 400,

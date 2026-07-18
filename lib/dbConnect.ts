@@ -12,6 +12,7 @@ export const collectionNames = {
   WISHLIST:"wishlist",
   CART:"cart",
   ADDRESS:"address",
+  ORDERS:"orders",
 };
 
 if (!uri) {

@@ -1,4 +1,4 @@
-import { createAddressService } from "@/services/address/address.services";
+import { createAddressService, getAllAddressesService } from "@/services/address/address.services";
 import { NextResponse } from "next/server";
 
 
@@ -33,6 +33,30 @@ export async function POST(request: Request) {
       {
         status: 400,
       }
+    );
+  }
+}
+
+export async function GET() {
+  try {
+    const addresses = await getAllAddressesService();
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Addresses retrieved successfully.",
+        data: addresses,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error ? error.message : "Something went wrong.",
+      },
+      { status: 500 }
     );
   }
 }

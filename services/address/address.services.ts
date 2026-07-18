@@ -102,16 +102,18 @@ export async function createAddressService(
 
 
 
+export async function getAllAddressesService() {
+  const addressCollection = await getCollection(collectionNames.ADDRESS);
+
+  const addresses = await addressCollection.find().toArray();
+
+  return addresses;
+}
 
 
-export async function getUserAddressService(userId: string) {
-  if (!ObjectId.isValid(userId)) {
-    throw new Error("Invalid user id.");
-  }
 
-  const addressCollection = await getCollection(
-    collectionNames.ADDRESS
-  );
+export async function getSingleAddressService(userId: string) {
+  const addressCollection = await getCollection(collectionNames.ADDRESS);
 
   const address = await addressCollection.findOne({
     userId,

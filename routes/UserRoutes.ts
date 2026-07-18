@@ -22,6 +22,10 @@ export const userRoutes=[
           title: " Set Address",
           url: "/userDashboard/createAddress",
         },
+         {
+          title:"My Orders",
+          url: "/userDashboard/myorders",
+        },
        
         
          
