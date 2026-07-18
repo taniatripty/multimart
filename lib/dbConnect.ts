@@ -10,6 +10,7 @@ export const collectionNames = {
   BRANDS:"brands",
   PRODUCTS:"products",
   WISHLIST:"wishlist",
+  CART:"cart",
 };
 
 if (!uri) {

@@ -1,11 +1,402 @@
 
+// "use client";
+
+// import { useParams } from "next/navigation";
+// import { useEffect, useState } from "react";
+// import Image from "next/image";
+// import { toast } from "sonner";
+// import { ArrowLeft, Star, Heart, ShoppingCart } from "lucide-react";
+// import { useRouter } from "next/navigation";
+
+// import { Badge } from "@/components/ui/badge";
+// import { Button } from "@/components/ui/button";
+// import { useSession } from "next-auth/react";
+
+// interface Product {
+//   _id: string;
+//   name: string;
+//   shortDescription: string;
+//   description: string;
+//   categoryId: string;
+//   subcategory: string;
+//   brandId: string;
+//   sellerId: string;
+//   storeId: string;
+//   price: number;
+//   discount: number;
+//   salePrice: number;
+//   stock: number;
+//   thumbnail: string;
+//   colors: string[];
+//   sizes: string[];
+//   features: string[];
+//   status: "pending" | "approved" | "rejected" | "deleted";
+//   featured: boolean;
+//   averageRating: number;
+//   totalReviews: number;
+//   totalSold: number;
+//   views: number;
+//   createdAt: string;
+//   updatedAt: string;
+//   categoryName: string;
+//   brandName: string;
+// }
+
+// export default function ProductDetailsPage() {
+//   const params = useParams();
+//   const router = useRouter();
+//   const id = params.id as string;
+//   const {data:session}=useSession();
+//   console.log(session)
+//   const userId=session?.user?.id
+//   console.log(userId)
+
+//   const [product, setProduct] = useState<Product | null>(null);
+//   const [loading, setLoading] = useState(true);
+
+//   // Wishlist & Cart state
+//   const [wishlistLoading, setWishlistLoading] = useState(false);
+//   const [cartLoading, setCartLoading] = useState(false);
+//   const [isWishlisted, setIsWishlisted] = useState(false);
+
+//   useEffect(() => {
+//     if (!id) return;
+
+//     let cancelled = false;
+
+//     const fetchProduct = async () => {
+//       try {
+//         const res = await fetch(`/api/products/${id}`);
+//         const data = await res.json();
+
+//         if (!res.ok) {
+//           toast.error(data.message || "Failed to load product");
+//           return;
+//         }
+
+//         if (!cancelled) {
+//           setProduct(data.data);
+//         }
+//       } catch {
+//         if (!cancelled) {
+//           toast.error("Failed to load product");
+//         }
+//       } finally {
+//         if (!cancelled) {
+//           setLoading(false);
+//         }
+//       }
+//     };
+
+//     fetchProduct();
+
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [id]);
+
+//   const handleToggleWishlist = async () => {
+//     if (!product) return;
+
+//        if (!userId) {
+//     toast.error("Please login first.");
+//     return;
+//   }
+
+//     setWishlistLoading(true);
+//     try {
+//       const res = await fetch("/api/wishlist", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           userId, 
+//           productId: product._id }),
+//       });
+
+//       const data = await res.json();
+
+//       if (!res.ok) {
+//         throw new Error(data.message || "Failed to update wishlist");
+//       }
+
+//       setIsWishlisted(!isWishlisted);
+//       toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
+//     } catch (err) {
+//       toast.error(err instanceof Error ? err.message : "Failed to update wishlist");
+//     } finally {
+//       setWishlistLoading(false);
+//     }
+//   };
+
+//   const handleAddToCart = async () => {
+//     if (!product) return;
+
+//     if (product.stock <= 0) {
+//       toast.error("Out of stock");
+//       return;
+//     }
+
+//     setCartLoading(true);
+//     try {
+//       const res = await fetch("/api/cart", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           productId: product._id,
+//           userId,
+//           quantity: 1,
+//         }),
+//       });
+
+//       const data = await res.json();
+
+//       if (!res.ok) {
+//         throw new Error(data.message || "Failed to add to cart");
+//       }
+
+//       toast.success("Added to cart");
+//     } catch (err) {
+//       toast.error(err instanceof Error ? err.message : "Failed to add to cart");
+//     } finally {
+//       setCartLoading(false);
+//     }
+//   };
+
+//   if (loading) {
+//     return (
+//       <div className="flex h-80 items-center justify-center">
+//         <p className="text-muted-foreground">Loading product...</p>
+//       </div>
+//     );
+//   }
+
+//   if (!product) {
+//     return (
+//       <div className="flex h-80 items-center justify-center">
+//         <p className="text-muted-foreground">Product not found.</p>
+//       </div>
+//     );
+//   }
+
+//   const outOfStock = product.stock <= 0;
+
+//   return (
+//     <div className="mx-auto max-w-6xl p-6">
+//       {/* Back button */}
+//       <div className="mb-6">
+//         <Button variant="ghost" onClick={() => router.back()}>
+//           <ArrowLeft className="mr-2 h-4 w-4" />
+//           Back
+//         </Button>
+//       </div>
+
+//       <div className="grid gap-8 md:grid-cols-2">
+//         {/* Left: Image */}
+//         <div className="overflow-hidden rounded-xl border bg-card">
+//           <div className="relative aspect-square w-full bg-muted">
+//             <Image
+//               src={product.thumbnail}
+//               alt={product.name}
+//               fill
+//               className="object-cover"
+//             />
+//           </div>
+//         </div>
+
+//         {/* Right: Info */}
+//         <div className="flex flex-col">
+//           {/* Title & basic meta */}
+//           <div>
+//             <div className="flex flex-wrap items-center gap-2">
+//               <Badge
+//                 variant={
+//                   product.status === "approved"
+//                     ? "default"
+//                     : product.status === "pending"
+//                     ? "secondary"
+//                     : "destructive"
+//                 }
+//               >
+//                 {product.status}
+//               </Badge>
+//               {product.featured && <Badge>Featured</Badge>}
+//             </div>
+
+//             <h1 className="mt-3 text-3xl font-bold">{product.name}</h1>
+
+//             <p className="mt-1 text-muted-foreground">
+//               {product.categoryName} • {product.brandName} • {product.subcategory}
+//             </p>
+//           </div>
+
+//           {/* Price & stock */}
+//           <div className="mt-6 rounded-lg border bg-card p-4">
+//             <div className="flex items-end justify-between">
+//               <div>
+//                 <p className="text-sm text-muted-foreground">Price</p>
+//                 <div className="flex items-center gap-3">
+//                   <p className="text-2xl font-bold">
+//                     ৳{product.salePrice.toLocaleString()}
+//                   </p>
+//                   {product.salePrice !== product.price && (
+//                     <p className="text-lg text-muted-foreground line-through">
+//                       ৳{product.price.toLocaleString()}
+//                     </p>
+//                   )}
+//                 </div>
+//                 {product.discount > 0 && (
+//                   <p className="mt-1 text-sm text-muted-foreground">
+//                     Discount: {product.discount}%
+//                   </p>
+//                 )}
+//               </div>
+
+//               <div className="text-right">
+//                 <p className="text-sm text-muted-foreground">Stock</p>
+//                 <p className="text-xl font-semibold">{product.stock}</p>
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* Short description */}
+//           {product.shortDescription && (
+//             <div className="mt-6">
+//               <h2 className="text-lg font-semibold">Short Description</h2>
+//               <p className="mt-1 text-muted-foreground">
+//                 {product.shortDescription}
+//               </p>
+//             </div>
+//           )}
+
+//           {/* Description */}
+//           {product.description && (
+//             <div className="mt-6">
+//               <h2 className="text-lg font-semibold">Description</h2>
+//               <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
+//                 {product.description}
+//               </p>
+//             </div>
+//           )}
+
+//           {/* Colors, Sizes, Features */}
+//           <div className="mt-6 grid gap-4 sm:grid-cols-2">
+//             {product.colors?.length > 0 && (
+//               <div className="rounded-lg border bg-card p-4">
+//                 <h3 className="font-semibold">Colors</h3>
+//                 <div className="mt-2 flex flex-wrap gap-2">
+//                   {product.colors.map((c) => (
+//                     <Badge key={c} variant="secondary">
+//                       {c}
+//                     </Badge>
+//                   ))}
+//                 </div>
+//               </div>
+//             )}
+
+//             {product.sizes?.length > 0 && (
+//               <div className="rounded-lg border bg-card p-4">
+//                 <h3 className="font-semibold">Sizes</h3>
+//                 <div className="mt-2 flex flex-wrap gap-2">
+//                   {product.sizes.map((s) => (
+//                     <Badge key={s} variant="secondary">
+//                       {s}
+//                     </Badge>
+//                   ))}
+//                 </div>
+//               </div>
+//             )}
+
+//             {product.features?.length > 0 && (
+//               <div className="rounded-lg border bg-card p-4 sm:col-span-2">
+//                 <h3 className="font-semibold">Features</h3>
+//                 <ul className="mt-2 list-disc pl-5 text-muted-foreground">
+//                   {product.features.map((f, i) => (
+//                     <li key={i}>{f}</li>
+//                   ))}
+//                 </ul>
+//               </div>
+//             )}
+//           </div>
+
+//           {/* Stats */}
+//           <div className="mt-6 grid gap-4 sm:grid-cols-3">
+//             <div className="rounded-lg border bg-card p-4">
+//               <p className="text-sm text-muted-foreground">Rating</p>
+//               <div className="mt-1 flex items-center gap-2">
+//                 <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+//                 <p className="font-semibold">
+//                   {product.averageRating.toFixed(1)} ({product.totalReviews}{" "}
+//                   reviews)
+//                 </p>
+//               </div>
+//             </div>
+
+//             <div className="rounded-lg border bg-card p-4">
+//               <p className="text-sm text-muted-foreground">Total Sold</p>
+//               <p className="mt-1 text-xl font-semibold">{product.totalSold}</p>
+//             </div>
+
+//             <div className="rounded-lg border bg-card p-4">
+//               <p className="text-sm text-muted-foreground">Views</p>
+//               <p className="mt-1 text-xl font-semibold">{product.views}</p>
+//             </div>
+//           </div>
+
+//           {/* Meta info */}
+//           <div className="mt-6 text-sm text-muted-foreground">
+//             <p>Created: {new Date(product.createdAt).toLocaleString()}</p>
+//             <p>Updated: {new Date(product.updatedAt).toLocaleString()}</p>
+//           </div>
+
+//           {/* Action buttons - Bottom*/}
+//           <div className="mt-8 flex flex-col gap-3 border-t pt-6">
+//             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+//               <Button
+//                 onClick={handleToggleWishlist}
+//                 disabled={wishlistLoading}
+//                 variant="outline"
+//                 size="lg"
+//                 className="w-full"
+//               >
+//                 <Heart
+//                   className={`mr-2 h-5 w-5 ${
+//                     isWishlisted ? "fill-red-500 text-red-500" : ""
+//                   }`}
+//                 />
+//                 {wishlistLoading ? "Updating..." : isWishlisted ? "Wishlisted" : "Add to Wishlist"}
+//               </Button>
+
+//               <Button
+//                 onClick={handleAddToCart}
+//                 disabled={cartLoading || outOfStock}
+//                 size="lg"
+//                 className="w-full"
+//               >
+//                 <ShoppingCart className="mr-2 h-5 w-5" />
+//                 {cartLoading ? "Adding..." : outOfStock ? "Out of Stock" : "Add to Cart"}
+//               </Button>
+//             </div>
+
+//             {outOfStock && (
+//               <p className="text-center text-sm text-destructive">
+//                 This product is currently out of stock.
+//               </p>
+//             )}
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
 "use client";
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { toast } from "sonner";
-import { ArrowLeft, Star, Heart, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Star, Heart, ShoppingCart, Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +421,7 @@ interface Product {
   colors: string[];
   sizes: string[];
   features: string[];
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "deleted";
   featured: boolean;
   averageRating: number;
   totalReviews: number;
@@ -46,10 +437,9 @@ export default function ProductDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const {data:session}=useSession();
-  console.log(session)
-  const userId=session?.user?.id
-  console.log(userId)
+  const { data: session } = useSession();
+
+  const userId = session?.user?.id;
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,6 +448,9 @@ export default function ProductDetailsPage() {
   const [wishlistLoading, setWishlistLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Quantity state
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (!id) return;
@@ -76,6 +469,8 @@ export default function ProductDetailsPage() {
 
         if (!cancelled) {
           setProduct(data.data);
+          // Reset quantity when product changes
+          setQuantity(1);
         }
       } catch {
         if (!cancelled) {
@@ -98,10 +493,10 @@ export default function ProductDetailsPage() {
   const handleToggleWishlist = async () => {
     if (!product) return;
 
-       if (!userId) {
-    toast.error("Please login first.");
-    return;
-  }
+    if (!userId) {
+      toast.error("Please login first.");
+      return;
+    }
 
     setWishlistLoading(true);
     try {
@@ -109,8 +504,9 @@ export default function ProductDetailsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId, 
-          productId: product._id }),
+          userId,
+          productId: product._id,
+        }),
       });
 
       const data = await res.json();
@@ -136,14 +532,20 @@ export default function ProductDetailsPage() {
       return;
     }
 
+    if (quantity <= 0 || quantity > product.stock) {
+      toast.error("Invalid quantity");
+      return;
+    }
+
     setCartLoading(true);
     try {
-      const res = await fetch("/api/cart", {
+      const res = await fetch("/api/addToCart", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: product._id,
-          quantity: 1,
+          userId,
+          quantity, // send dynamic quantity
         }),
       });
 
@@ -159,6 +561,13 @@ export default function ProductDetailsPage() {
     } finally {
       setCartLoading(false);
     }
+  };
+
+  const handleQuantityChange = (newQty: number) => {
+    if (!product) return;
+    if (newQty < 1) newQty = 1;
+    if (newQty > product.stock) newQty = product.stock;
+    setQuantity(newQty);
   };
 
   if (loading) {
@@ -178,6 +587,7 @@ export default function ProductDetailsPage() {
   }
 
   const outOfStock = product.stock <= 0;
+  const calculatedTotal = product.salePrice * quantity;
 
   return (
     <div className="mx-auto max-w-6xl p-6">
@@ -256,6 +666,56 @@ export default function ProductDetailsPage() {
               </div>
             </div>
           </div>
+
+          {/* Quantity selector + calculated total */}
+          {!outOfStock && (
+            <div className="mt-6 rounded-lg border bg-card p-4">
+              <p className="text-sm text-muted-foreground">Quantity</p>
+              <div className="mt-2 flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange(quantity - 1)}
+                  disabled={quantity <= 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+
+                <input
+                  type="number"
+                  min={1}
+                  max={product.stock}
+                  value={quantity}
+                  onChange={(e) =>
+                    handleQuantityChange(parseInt(e.target.value || "1", 10))
+                  }
+                  className="h-10 w-20 rounded-md border bg-background px-3 text-center"
+                />
+
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange(quantity + 1)}
+                  disabled={quantity >= product.stock}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+
+                <div className="ml-auto text-right">
+                  <p className="text-sm text-muted-foreground">Total</p>
+                  <p className="text-xl font-bold">
+                    ৳{calculatedTotal.toLocaleString()}
+                  </p>
+                  {product.salePrice !== product.price && (
+                    <p className="text-xs text-muted-foreground">
+                      (৳{product.price.toLocaleString()} × {quantity} = ৳
+                      {(product.price * quantity).toLocaleString()})
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Short description */}
           {product.shortDescription && (
@@ -347,7 +807,7 @@ export default function ProductDetailsPage() {
             <p>Updated: {new Date(product.updatedAt).toLocaleString()}</p>
           </div>
 
-          {/* Action buttons - Bottom*/}
+          {/* Action buttons - Bottom */}
           <div className="mt-8 flex flex-col gap-3 border-t pt-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Button
@@ -372,7 +832,11 @@ export default function ProductDetailsPage() {
                 className="w-full"
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                {cartLoading ? "Adding..." : outOfStock ? "Out of Stock" : "Add to Cart"}
+                {cartLoading
+                  ? "Adding..."
+                  : outOfStock
+                  ? "Out of Stock"
+                  : `Add to Cart (${quantity})`}
               </Button>
             </div>
 
