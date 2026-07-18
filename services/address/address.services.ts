@@ -97,3 +97,29 @@ export async function createAddressService(
     insertedId: result.insertedId,
   };
 }
+
+
+
+
+
+
+
+export async function getUserAddressService(userId: string) {
+  if (!ObjectId.isValid(userId)) {
+    throw new Error("Invalid user id.");
+  }
+
+  const addressCollection = await getCollection(
+    collectionNames.ADDRESS
+  );
+
+  const address = await addressCollection.findOne({
+    userId,
+  });
+
+  if (!address) {
+    throw new Error("Address not found.");
+  }
+
+  return address;
+}

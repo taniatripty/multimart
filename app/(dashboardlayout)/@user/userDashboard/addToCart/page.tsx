@@ -264,7 +264,7 @@ export default function MyCartPage() {
           <Button
             className="flex-1"
             onClick={() =>
-              (window.location.href = `/checkout/${item._id}`)
+              (window.location.href = `/userDashboard/checkout/${item._id}`)
             }
           >
             Proceed to Checkout

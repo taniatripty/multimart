@@ -173,3 +173,56 @@ export async function removeCartItemService(id: string) {
     message: "Item removed from cart successfully.",
   };
 }
+
+
+
+export async function getSingleCartItemService(id: string) {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("Invalid cart id.");
+  }
+
+  const cartCollection = await getCollection(
+    collectionNames.CART
+  );
+
+  const categoryCollection = await getCollection(
+    collectionNames.CATEGORIES
+  );
+
+  const brandCollection = await getCollection(
+    collectionNames.BRANDS
+  );
+
+  const cart = await cartCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!cart) {
+    throw new Error("Cart item not found.");
+  }
+
+  let categoryName = "";
+  let brandName = "";
+
+  if (cart.categoryId) {
+    const category = await categoryCollection.findOne({
+      _id: new ObjectId(cart.categoryId),
+    });
+
+    categoryName = category?.name || "";
+  }
+
+  if (cart.brandId) {
+    const brand = await brandCollection.findOne({
+      _id: new ObjectId(cart.brandId),
+    });
+
+    brandName = brand?.name || "";
+  }
+
+  return {
+    ...cart,
+    categoryName,
+    brandName,
+  };
+}
