@@ -172,3 +172,36 @@ export async function getMyWishlistService(
     data: wishlist,
   };
 }
+
+
+
+export async function removeWishlistItemService(id: string) {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("Invalid wishlist item id.");
+  }
+
+  const wishlistCollection = await getCollection(
+    collectionNames.WISHLIST
+  );
+
+  const wishlistItem = await wishlistCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!wishlistItem) {
+    throw new Error("Wishlist item not found.");
+  }
+
+  const result = await wishlistCollection.deleteOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!result.deletedCount) {
+    throw new Error("Failed to remove wishlist item.");
+  }
+
+  return {
+    success: true,
+    message: "Item removed from wishlist successfully.",
+  };
+}

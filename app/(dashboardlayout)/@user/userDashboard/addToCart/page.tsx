@@ -146,7 +146,7 @@ export default function MyCartPage() {
     if (!result.isConfirmed) return;
 
     try {
-      const res = await fetch(`/api/cart/${id}`, {
+      const res = await fetch(`/api/addToCart/remove/${id}`, {
         method: "DELETE",
       });
 

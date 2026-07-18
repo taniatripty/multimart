@@ -66,7 +66,7 @@ export default function MyWishlistPage() {
   const handleRemove = async (wishlistId: string) => {
     try {
       const res = await fetch(
-        `/api/wishlist/${wishlistId}`,
+        `/api/wishlist/remove/${wishlistId}`,
         {
           method: "DELETE",
         }

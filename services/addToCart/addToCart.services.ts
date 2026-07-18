@@ -142,3 +142,34 @@ export async function getMyCartService(userId: string) {
     data: carts,
   };
 }
+
+export async function removeCartItemService(id: string) {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("Invalid cart item id.");
+  }
+
+  const cartCollection = await getCollection(
+    collectionNames.CART
+  );
+
+  const cartItem = await cartCollection.findOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!cartItem) {
+    throw new Error("Cart item not found.");
+  }
+
+  const result = await cartCollection.deleteOne({
+    _id: new ObjectId(id),
+  });
+
+  if (!result.deletedCount) {
+    throw new Error("Failed to remove cart item.");
+  }
+
+  return {
+    success: true,
+    message: "Item removed from cart successfully.",
+  };
+}
