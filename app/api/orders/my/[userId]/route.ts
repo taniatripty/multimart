@@ -1,7 +1,5 @@
-import { getMyOrdersService } from "@/services/orders/orders.services";
+import { getMyOrdersService } from "@/services/userOrders/userorders.services";
 import { NextRequest, NextResponse } from "next/server";
-
-
 
 interface RouteProps {
   params: Promise<{
@@ -9,10 +7,7 @@ interface RouteProps {
   }>;
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: RouteProps
-) {
+export async function GET(request: NextRequest, { params }: RouteProps) {
   try {
     const { userId } = await params;
 
@@ -28,13 +23,11 @@ export async function GET(
       {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Failed to fetch orders.",
+          error instanceof Error ? error.message : "Failed to fetch orders.",
       },
       {
         status: 400,
-      }
+      },
     );
   }
 }

@@ -1,6 +1,5 @@
-import { createOrderService } from "@/services/orders/orders.services";
+import { createOrderService } from "@/services/userOrders/userorders.services";
 import { NextRequest, NextResponse } from "next/server";
-
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,13 +17,11 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         message:
-          error instanceof Error
-            ? error.message
-            : "Failed to create order.",
+          error instanceof Error ? error.message : "Failed to create order.",
       },
       {
         status: 400,
-      }
+      },
     );
   }
 }

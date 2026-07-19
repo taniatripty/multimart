@@ -18,6 +18,10 @@ export const sellerRoutes=[
           title: "Manage Products",
           url: "/sellerDashboard/manageProducts",
         },
+       {
+          title: "Manage Orders",
+          url: "/sellerDashboard/manageOrders",
+        },
        
          
     ]}
