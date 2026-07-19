@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Package } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { Package } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Order {
   _id: string;
@@ -62,19 +62,13 @@ export default function MyOrdersPage() {
   }, [userId]);
 
   if (loading) {
-    return (
-      <div className="py-20 text-center">
-        Loading orders...
-      </div>
-    );
+    return <div className="py-20 text-center">Loading orders...</div>;
   }
 
   return (
     <section className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">
-          My Orders
-        </h1>
+        <h1 className="text-3xl font-bold">My Orders</h1>
 
         <p className="text-muted-foreground">
           Track all of your purchased products.
@@ -85,9 +79,7 @@ export default function MyOrdersPage() {
         <div className="rounded-xl border py-20 text-center">
           <Package className="mx-auto mb-4 h-14 w-14 text-muted-foreground" />
 
-          <h2 className="text-xl font-semibold">
-            No Orders Found
-          </h2>
+          <h2 className="text-xl font-semibold">No Orders Found</h2>
 
           <p className="mt-2 text-muted-foreground">
             You have not placed any orders yet.
@@ -96,10 +88,7 @@ export default function MyOrdersPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-1 lg:grid-cols-3">
           {orders.map((order) => (
-            <Card
-              key={order._id}
-              className="overflow-hidden"
-            >
+            <Card key={order._id} className="overflow-hidden">
               <Image
                 src={order.thumbnail}
                 alt={order.productName}
@@ -115,10 +104,7 @@ export default function MyOrdersPage() {
                   </h2>
 
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Ordered on{" "}
-                    {new Date(
-                      order.createdAt
-                    ).toLocaleDateString()}
+                    Ordered on {new Date(order.createdAt).toLocaleDateString()}
                   </p>
                 </div>
 
@@ -132,54 +118,44 @@ export default function MyOrdersPage() {
                   <div className="flex justify-between">
                     <span>Price</span>
 
-                    <span>
-                      ৳{order.salePrice}
-                    </span>
+                    <span>৳{order.salePrice}</span>
                   </div>
 
                   <div className="flex justify-between font-semibold">
                     <span>Total</span>
 
-                    <span>
-                      ৳{order.totalSalePrice}
-                    </span>
+                    <span>৳{order.totalSalePrice}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <Badge
                     variant={
-                      order.paymentStatus ===
-                      "PAID"
-                        ? "default"
-                        : "secondary"
+                      order.paymentStatus === "PAID" ? "default" : "secondary"
                     }
                   >
                     {order.paymentStatus}
                   </Badge>
-
                   <Badge
                     className={
-                      order.orderStatus ===
-                      "DELIVERED"
-                        ? "bg-green-600"
-                        : order.orderStatus ===
-                            "PENDING"
-                          ? "bg-yellow-500"
-                          : order.orderStatus ===
-                              "CANCELLED"
-                            ? "bg-red-600"
-                            : "bg-blue-600"
+                      order.orderStatus === "PENDING"
+                        ? "bg-yellow-500 hover:bg-yellow-500"
+                        : order.orderStatus === "CONFIRMED"
+                          ? "bg-blue-500 hover:bg-blue-500"
+                          : order.orderStatus === "SHIPPED"
+                            ? "bg-purple-500 hover:bg-purple-500"
+                            : order.orderStatus === "DELIVERED"
+                              ? "bg-green-600 hover:bg-green-600"
+                              : order.orderStatus === "CANCELLED"
+                                ? "bg-red-600 hover:bg-red-600"
+                                : "bg-gray-500 hover:bg-gray-500"
                     }
                   >
                     {order.orderStatus}
                   </Badge>
                 </div>
 
-                <Button
-                  variant="outline"
-                  className="w-full"
-                >
+                <Button variant="outline" className="w-full">
                   View Details
                 </Button>
               </CardContent>

@@ -233,6 +233,7 @@ export default function SellerOrdersPage() {
                     <SelectItem value="CONFIRMED">
                       Confirmed
                     </SelectItem>
+                   
 
                     <SelectItem value="SHIPPED">
                       Shipped
