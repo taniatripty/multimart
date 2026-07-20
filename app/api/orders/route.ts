@@ -2,31 +2,75 @@ import { createOrderService, getAllOrdersService } from "@/services/orders/order
 
 import { NextRequest, NextResponse } from "next/server";
 
+// export async function POST(request: NextRequest) {
+//   try {
+//     const body = await request.json();
+
+//     const order = await createOrderService(body);
+
+//     return NextResponse.json({
+//       success: true,
+//       message: "Order created successfully.",
+//       data: order,
+//     });
+//   } catch (error) {
+//     return NextResponse.json(
+//       {
+//         success: false,
+//         message:
+//           error instanceof Error ? error.message : "Failed to create order.",
+//       },
+//       {
+//         status: 400,
+//       },
+//     );
+//   }
+// }
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const order = await createOrderService(body);
+    const order = await createOrderService({
+      userId: body.userId,
+      sellerId: body.sellerId,
 
-    return NextResponse.json({
-      success: true,
-      message: "Order created successfully.",
-      data: order,
+      productId: body.productId,
+      cartId: body.cartId,
+      addressId: body.addressId,
+
+      quantity: Number(body.quantity),
+
+      shippingFee: Number(body.shippingFee),
+
+      couponId: body.couponId || undefined,
     });
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Order created successfully.",
+        data: order,
+      },
+      {
+        status: 201,
+      }
+    );
   } catch (error) {
     return NextResponse.json(
       {
         success: false,
         message:
-          error instanceof Error ? error.message : "Failed to create order.",
+          error instanceof Error
+            ? error.message
+            : "Failed to create order.",
       },
       {
         status: 400,
-      },
+      }
     );
   }
 }
-
 
 
 export async function GET(request: NextRequest) {

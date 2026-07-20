@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import { useSession } from "next-auth/react";
@@ -6,11 +8,14 @@ import { useEffect, useState } from "react";
 
 import { CheckCircle2, CreditCard, MapPin, Truck } from "lucide-react";
 import Image from "next/image";
+import Swal from "sweetalert2";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import Swal from "sweetalert2";
 
 interface Address {
   _id: string;
@@ -53,11 +58,16 @@ export default function CheckoutPage() {
   const userId = (session?.user as { id?: string })?.id;
 
   const [product, setProduct] = useState<CartItem | null>(null);
-
   const [address, setAddress] = useState<Address | null>(null);
 
-  const [selectedAddress, setSelectedAddress] = useState("");
+  const [selectedAddress, setSelectedAddress] = useState<string>("");
   const [isOrdering, setIsOrdering] = useState(false);
+
+  const [couponCode, setCouponCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [coupon, setCoupon] = useState<any>(null);
+  const [loadingCoupon, setLoadingCoupon] = useState(false);
 
   const [loading, setLoading] = useState(true);
 
@@ -92,6 +102,47 @@ export default function CheckoutPage() {
     loadData();
   }, [cartId, userId]);
 
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Enter coupon code");
+      return;
+    }
+
+    if (!product) {
+      toast.error("Product not loaded yet");
+      return;
+    }
+
+    setLoadingCoupon(true);
+
+    try {
+      const res = await fetch("/api/coupons/apply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          code: couponCode,
+          subtotal: product.totalSalePrice,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!result.success) {
+        toast.error(result.message);
+        return;
+      }
+
+      setCoupon(result.data);
+      setDiscount(result.data.discount);
+
+      toast.success("Coupon applied successfully");
+    } finally {
+      setLoadingCoupon(false);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!product || !address || !userId) return;
 
@@ -113,41 +164,47 @@ export default function CheckoutPage() {
           quantity: product.quantity,
 
           shippingFee: shipping,
-
           addressId: address._id,
+
+          // if you want to send coupon info:
+          couponId: coupon?._id ?? undefined,
+          discount,
         }),
       });
 
       const result = await res.json();
 
       if (!res.ok || !result.success) {
-        throw new Error(result.message);
-
+        throw new Error(result.message ?? "Order failed");
       }
-        await Swal.fire({
-      icon: "success",
-      title: "Order Placed!",
-      text: "Your order has been placed successfully.",
-      confirmButtonText: "OK",
-      confirmButtonColor: "#16a34a",
-    });
 
-      // later replace with Stripe checkout
-      
+      await Swal.fire({
+        icon: "success",
+        title: "Order Placed!",
+        text: "Your order has been placed successfully.",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#16a34a",
+      });
+
+      // later replace with Stripe checkout or redirect
     } catch (error) {
       await Swal.fire({
-      icon: "error",
-      title: "Order Failed",
-      text:
-        error instanceof Error
-          ? error.message
-          : "Something went wrong.",
-      confirmButtonColor: "#dc2626",
-    });
+        icon: "error",
+        title: "Order Failed",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong.",
+        confirmButtonColor: "#dc2626",
+      });
     } finally {
       setIsOrdering(false);
     }
   };
+
+  const shipping = 80;
+  const subtotal = product?.totalSalePrice ?? 0;
+  const total = subtotal + shipping - discount;
 
   if (loading) {
     return (
@@ -174,9 +231,6 @@ export default function CheckoutPage() {
       </div>
     );
   }
-
-  const shipping = 80;
-  const total = product.totalSalePrice + shipping;
 
   return (
     <section className="bg-gradient-to-b from-background to-muted/30 py-12">
@@ -317,12 +371,34 @@ export default function CheckoutPage() {
               </div>
 
               <CardContent className="space-y-5 p-6">
+                {/* Coupon */}
+                <div className="space-y-2">
+                  <Label htmlFor="couponCode">Coupon Code</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="couponCode"
+                      placeholder="Enter coupon"
+                      value={couponCode}
+                      onChange={(e) =>
+                        setCouponCode(e.target.value.toUpperCase())
+                      }
+                    />
+                    <Button onClick={applyCoupon} disabled={loadingCoupon}>
+                      {loadingCoupon ? "Applying..." : "Apply"}
+                    </Button>
+                  </div>
+                  {discount > 0 && (
+                    <p className="text-xs text-green-600">
+                      Discount applied: ৳{discount}
+                    </p>
+                  )}
+                </div>
+
+                {/* Price breakdown */}
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-medium">
-                      ৳{product.totalSalePrice}
-                    </span>
+                    <span className="font-medium">৳{subtotal}</span>
                   </div>
 
                   <div className="flex justify-between text-sm">
@@ -332,6 +408,13 @@ export default function CheckoutPage() {
                     </span>
                     <span className="font-medium">৳{shipping}</span>
                   </div>
+
+                  {discount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Discount</span>
+                      <span className="font-medium">-৳{discount}</span>
+                    </div>
+                  )}
                 </div>
 
                 <hr className="border-muted" />
@@ -340,7 +423,7 @@ export default function CheckoutPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Total</p>
                     <p className="text-xs text-muted-foreground">
-                      Includes shipping
+                      Includes shipping{discount > 0 ? " and discount" : ""}
                     </p>
                   </div>
                   <p className="text-2xl font-extrabold">৳{total}</p>
@@ -369,6 +452,7 @@ export default function CheckoutPage() {
                 >
                   {isOrdering ? "Placing Order..." : "Place Order"}
                 </Button>
+
                 {!address && (
                   <p className="text-center text-xs text-destructive">
                     Please add a shipping address to continue.
