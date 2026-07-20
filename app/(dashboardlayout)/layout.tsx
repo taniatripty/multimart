@@ -1,13 +1,15 @@
+
 "use client";
 
 import { useSession } from "next-auth/react";
-import { AppSidebar } from "@/components/app-sidebar"
 
-import { SiteHeader } from "@/components/site-header"
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   SidebarInset,
   SidebarProvider,
-} from "@/components/ui/sidebar"
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+
 import { UserRole } from "@/lib/types";
 
 export default function DashboardLayout({
@@ -22,25 +24,34 @@ export default function DashboardLayout({
   const { data: session, status } = useSession();
 
   if (status === "loading") {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        Loading...
+      </div>
+    );
   }
 
-  const role = session?.user?.role;
+  const role = session?.user?.role as UserRole;
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen>
       <AppSidebar />
 
       <SidebarInset>
-        <SiteHeader />
+        {/* Mobile Header */}
+        <header className="sticky top-0 z-50 flex h-14 items-center border-b bg-background px-4 lg:hidden">
+          <SidebarTrigger />
+          <h1 className="ml-4 text-lg font-semibold">Dashboard</h1>
+        </header>
 
-        <div className="flex flex-1 flex-col">
+        {/* Page Content */}
+        <main className="flex min-h-screen flex-1 flex-col p-4 md:p-6">
           {role === UserRole.ADMIN
             ? admin
             : role === UserRole.SELLER
-            ? seller
-            : user}
-        </div>
+              ? seller
+              : user}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
