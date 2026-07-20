@@ -31,6 +31,10 @@ export const adminRoutes=[
           url: "/adminDashboard/manageUsers",
         },
          {
+          title: "Create Coupons",
+          url: "/adminDashboard/createCoupons",
+        },
+         {
           title: "All Orders" ,
           url: "/adminDashboard/manageOrders",
         },
