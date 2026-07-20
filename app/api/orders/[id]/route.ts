@@ -1,7 +1,5 @@
-import { updateOrderStatusService } from "@/services/sellerOrders/sellerorders.services";
+import { updateOrderStatusService } from "@/services/orders/sellerOrders/sellerorders.services";
 import { NextRequest, NextResponse } from "next/server";
-
-
 
 interface RouteProps {
   params: Promise<{
@@ -9,19 +7,13 @@ interface RouteProps {
   }>;
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: RouteProps
-) {
+export async function PATCH(request: NextRequest, { params }: RouteProps) {
   try {
     const { id } = await params;
 
     const body = await request.json();
 
-    const result = await updateOrderStatusService(
-      id,
-      body.orderStatus
-    );
+    const result = await updateOrderStatusService(id, body.orderStatus);
 
     return NextResponse.json({
       success: true,
@@ -38,7 +30,7 @@ export async function PATCH(
       },
       {
         status: 400,
-      }
+      },
     );
   }
 }

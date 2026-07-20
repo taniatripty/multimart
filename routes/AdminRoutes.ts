@@ -30,6 +30,10 @@ export const adminRoutes=[
           title: "Manage User",
           url: "/adminDashboard/manageUsers",
         },
+         {
+          title: "All Orders" ,
+          url: "/adminDashboard/manageOrders",
+        },
 
        
          

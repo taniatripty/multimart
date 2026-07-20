@@ -1,4 +1,4 @@
-import { getMyOrdersService } from "@/services/userOrders/userorders.services";
+import { getMyOrdersService } from "@/services/orders/userOrders/userorders.services";
 import { NextRequest, NextResponse } from "next/server";
 
 interface RouteProps {

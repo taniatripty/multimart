@@ -1,7 +1,5 @@
-import { getSellerOrdersService } from "@/services/sellerOrders/sellerorders.services";
+import { getSellerOrdersService } from "@/services/orders/sellerOrders/sellerorders.services";
 import { NextRequest, NextResponse } from "next/server";
-
-
 
 interface RouteProps {
   params: Promise<{
@@ -9,16 +7,11 @@ interface RouteProps {
   }>;
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: RouteProps
-) {
+export async function GET(request: NextRequest, { params }: RouteProps) {
   try {
     const { sellerId } = await params;
 
-    const orders = await getSellerOrdersService(
-      sellerId
-    );
+    const orders = await getSellerOrdersService(sellerId);
 
     return NextResponse.json({
       success: true,
@@ -36,7 +29,7 @@ export async function GET(
       },
       {
         status: 400,
-      }
+      },
     );
   }
 }
