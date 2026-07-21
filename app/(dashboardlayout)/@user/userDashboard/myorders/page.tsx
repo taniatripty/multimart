@@ -1,6 +1,6 @@
 "use client";
 
-import { Package } from "lucide-react";
+import { MessageCircle, Package } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 interface Order {
   _id: string;
@@ -155,9 +156,16 @@ export default function MyOrdersPage() {
                   </Badge>
                 </div>
 
-                <Button variant="outline" className="w-full">
-                  View Details
-                </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button variant="outline">View Details</Button>
+
+                  <Button asChild>
+                    <Link href={`/userDashboard/chat/${order._id}`}>
+                      <MessageCircle className="mr-2 h-4 w-4" />
+                      Chat
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

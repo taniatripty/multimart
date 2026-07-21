@@ -26,7 +26,7 @@ export async function applyCouponService(
 
   const now = new Date();
 
-  if (now < coupon.startDate) {
+  if (now <= coupon.startDate) {
     throw new Error("Coupon is not active yet.");
   }
 

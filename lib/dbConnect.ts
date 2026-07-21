@@ -13,7 +13,8 @@ export const collectionNames = {
   CART:"cart",
   ADDRESS:"address",
   ORDERS:"orders",
-  COUPONS:"coupons"
+  COUPONS:"coupons",
+  CHATS:"chats"
 };
 
 if (!uri) {

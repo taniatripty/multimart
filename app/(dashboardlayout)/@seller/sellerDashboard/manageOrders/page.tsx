@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { MessageCircle, Package } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { Package } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
 import {
   Select,
   SelectContent,
@@ -16,10 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import Link from "next/link";
 
 interface Order {
   _id: string;
-
+  userId: string;
   productName: string;
   thumbnail: string;
 
@@ -75,10 +77,7 @@ export default function SellerOrdersPage() {
     fetchOrders();
   }, [sellerId]);
 
-  const updateStatus = async (
-    orderId: string,
-    status: string
-  ) => {
+  const updateStatus = async (orderId: string, status: string) => {
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
@@ -104,8 +103,8 @@ export default function SellerOrdersPage() {
                 ...order,
                 orderStatus: status,
               }
-            : order
-        )
+            : order,
+        ),
       );
 
       toast.success("Order updated successfully.");
@@ -115,32 +114,22 @@ export default function SellerOrdersPage() {
   };
 
   if (loading) {
-    return (
-      <div className="py-20 text-center">
-        Loading orders...
-      </div>
-    );
+    return <div className="py-20 text-center">Loading orders...</div>;
   }
 
   return (
     <section className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">
-          Manage Orders
-        </h1>
+        <h1 className="text-3xl font-bold">Manage Orders</h1>
 
-        <p className="text-muted-foreground">
-          Manage customer orders.
-        </p>
+        <p className="text-muted-foreground">Manage customer orders.</p>
       </div>
 
       {orders.length === 0 ? (
         <div className="rounded-lg border py-20 text-center">
           <Package className="mx-auto mb-4 h-14 w-14 text-muted-foreground" />
 
-          <h2 className="text-xl font-semibold">
-            No Orders Found
-          </h2>
+          <h2 className="text-xl font-semibold">No Orders Found</h2>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
@@ -180,15 +169,12 @@ export default function SellerOrdersPage() {
                 </div>
 
                 <div className="rounded-md border p-3 text-sm">
-                  <p className="font-semibold mb-2">
-                    Shipping Address
-                  </p>
+                  <p className="font-semibold mb-2">Shipping Address</p>
 
                   <p>{order.address.address}</p>
 
                   <p>
-                    {order.address.area},{" "}
-                    {order.address.district}
+                    {order.address.area}, {order.address.district}
                   </p>
 
                   <p>{order.address.division}</p>
@@ -201,24 +187,20 @@ export default function SellerOrdersPage() {
                 <div className="flex justify-between">
                   <Badge
                     variant={
-                      order.paymentStatus === "PAID"
-                        ? "default"
-                        : "secondary"
+                      order.paymentStatus === "PAID" ? "default" : "secondary"
                     }
                   >
                     {order.paymentStatus}
                   </Badge>
 
-                  <Badge>
-                    {order.orderStatus}
-                  </Badge>
+                  <Badge>{order.orderStatus}</Badge>
                 </div>
 
                 <Select
                   defaultValue={order.orderStatus}
-                  onValueChange={(value) =>{
-                    if(!value) return
-                    updateStatus(order._id, value)
+                  onValueChange={(value) => {
+                    if (!value) return;
+                    updateStatus(order._id, value);
                   }}
                 >
                   <SelectTrigger>
@@ -226,30 +208,19 @@ export default function SellerOrdersPage() {
                   </SelectTrigger>
 
                   <SelectContent>
-                    <SelectItem value="PENDING">
-                      Pending
-                    </SelectItem>
+                    <SelectItem value="PENDING">Pending</SelectItem>
 
-                    <SelectItem value="CONFIRMED">
-                      Confirmed
-                    </SelectItem>
-                   
+                    <SelectItem value="CONFIRMED">Confirmed</SelectItem>
 
-                    <SelectItem value="SHIPPED">
-                      Shipped
-                    </SelectItem>
+                    <SelectItem value="SHIPPED">Shipped</SelectItem>
 
-                    <SelectItem value="DELIVERED">
-                      Delivered
-                    </SelectItem>
+                    <SelectItem value="DELIVERED">Delivered</SelectItem>
 
-                    <SelectItem value="CANCELLED">
-                      Cancelled
-                    </SelectItem>
+                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
 
-                <Button
+                {/* <Button
                   className="w-full"
                   onClick={() =>
                     updateStatus(
@@ -259,7 +230,22 @@ export default function SellerOrdersPage() {
                   }
                 >
                   Update Status
-                </Button>
+                </Button> */}
+
+                <div className="flex gap-3">
+                  <Button
+                    className="flex-1"
+                    onClick={() => updateStatus(order._id, order.orderStatus)}
+                  >
+                    Update Status
+                  </Button>
+
+                  <Button asChild variant="outline" size="icon">
+                    <Link href={`/sellerDashboard/chat/${order._id}`}>
+                      <MessageCircle className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
