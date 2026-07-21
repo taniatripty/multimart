@@ -1,45 +1,42 @@
-
-
 "use client";
 
-import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
 import {
-  Command,
-  LogOut,
-  User,
-  Mail,
-  Home,
-  ShoppingCart,
-  Package,
-  Users,
-  Settings,
   BarChart3,
-  FileText,
+  Command,
   CreditCard,
+  FileText,
   HelpCircle,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  Package,
+  Settings,
   Shield,
+  ShoppingCart,
   Store,
   Tag,
-  LayoutDashboard,
+  User,
+  Users,
   type LucideIcon,
 } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 import { UserRole } from "@/lib/types";
 import { adminRoutes } from "@/routes/AdminRoutes";
@@ -91,7 +88,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
   const userName = session?.user?.name ?? "User";
   const userEmail = session?.user?.email ?? "";
-  const userInitial = userName.charAt(0).toUpperCase();
+  const userImage = session?.user?.image;
 
   return (
     <Sidebar {...props} className="border-r">
@@ -101,18 +98,16 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Command className="h-5 w-5" />
           </div>
-         <Link href="/">
-          <div className="flex flex-col">
-          
-            <span className="text-base font-bold tracking-tight">
-              MultiMart
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {role?.toLowerCase() ?? "user"} dashboard
-            </span>
-          
-          </div>
-         </Link>
+          <Link href="/">
+            <div className="flex flex-col">
+              <span className="text-base font-bold tracking-tight">
+                MultiMart
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {role?.toLowerCase() ?? "user"} dashboard
+              </span>
+            </div>
+          </Link>
         </div>
       </SidebarHeader>
 
@@ -131,10 +126,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
                   return (
                     <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton
-                        className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300"
-                      >
-                        <Link href={item.url} className="flex w-full items-center gap-3">
+                      <SidebarMenuButton className="group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300">
+                        <Link
+                          href={item.url}
+                          className="flex w-full items-center gap-3"
+                        >
                           <Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-blue-600 dark:group-hover:text-blue-300" />
                           <span>{item.title}</span>
                         </Link>
@@ -149,13 +145,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       {/* Footer */}
+      {/* Footer */}
       <SidebarFooter className="border-t px-4 py-4">
         <div className="flex items-center gap-3 rounded-lg border bg-card p-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary text-primary-foreground">
-              {userInitial}
-            </AvatarFallback>
-          </Avatar>
+          <img
+            src={userImage || "/default-avatar.png"}
+            alt={userName}
+            className="h-10 w-10 rounded-full object-cover"
+          />
 
           <div className="flex min-w-0 flex-1 flex-col">
             <div className="flex items-center gap-2">
@@ -174,11 +171,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         <Button
           variant="destructive"
           className="mt-3 w-full justify-start gap-2"
-          onClick={() =>
-            signOut({
-              callbackUrl: "/login",
-            })
-          }
+          onClick={() => signOut({ callbackUrl: "/login" })}
         >
           <LogOut className="h-4 w-4" />
           <span>Logout</span>

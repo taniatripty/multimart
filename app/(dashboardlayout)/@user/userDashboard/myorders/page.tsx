@@ -13,7 +13,7 @@ import Link from "next/link";
 
 interface Order {
   _id: string;
-
+ productId:string;
   productName: string;
   thumbnail: string;
 
@@ -157,7 +157,10 @@ export default function MyOrdersPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <Button variant="outline">View Details</Button>
+                  <Button variant="outline">
+                    <Link href={`/allProducts/${order.productId}`}>
+                    View Details
+                    </Link></Button>
 
                   <Button asChild>
                     <Link href={`/userDashboard/chat/${order._id}`}>

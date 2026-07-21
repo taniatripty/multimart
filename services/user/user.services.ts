@@ -26,6 +26,29 @@ export async function getAllSellerService() {
     data: sellers,
   };
 }
+
+export async function getSingleUserService(
+  userId: string
+) {
+  if (!ObjectId.isValid(userId)) {
+    throw new Error("Invalid user id.");
+  }
+
+  const userCollection = await getCollection(
+    collectionNames.TEST_USER
+  );
+
+  const user = await userCollection.findOne({
+    _id: new ObjectId(userId),
+  });
+
+  if (!user) {
+    throw new Error("User not found.");
+  }
+
+  return user;
+}
+
 export async function getAllUserService() {
   const userCollection = await getCollection(
     collectionNames.TEST_USER
@@ -73,6 +96,50 @@ export async function getAllApproveSellerService() {
     message: "Sellers fetched successfully.",
     data: sellers,
   };
+}
+
+interface UpdateUserPayload {
+  name: string;
+  phone?: string;
+  image?: string;
+  bio?: string;
+}
+
+export async function updateUserService(
+  userId: string,
+  payload: UpdateUserPayload
+) {
+  if (!ObjectId.isValid(userId)) {
+    throw new Error("Invalid user id.");
+  }
+
+  const userCollection = await getCollection(
+    collectionNames.TEST_USER
+  );
+
+  const result = await userCollection.findOneAndUpdate(
+    {
+      _id: new ObjectId(userId),
+    },
+    {
+      $set: {
+        name: payload.name,
+        phone: payload.phone ?? "",
+        image: payload.image ?? "",
+        bio: payload.bio ?? "",
+        updatedAt: new Date(),
+      },
+    },
+    {
+      returnDocument: "after",
+    }
+  );
+
+  if (!result) {
+    throw new Error("User not found.");
+  }
+
+  return result;
 }
 
 export interface UpdateUserRolePayload {

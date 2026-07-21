@@ -11,6 +11,10 @@ export const adminRoutes=[
           url: "/admin-dashboard",
         },
         {
+          title: "Profile",
+          url: "/adminDashboard/profile",
+        },
+        {
           title: "Categories",
           url: "/adminDashboard/createCategories",
         },
