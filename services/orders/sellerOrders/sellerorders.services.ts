@@ -12,6 +12,8 @@ export async function getSellerOrdersService(sellerId: string) {
     collectionNames.ORDERS
   );
 
+ 
+
   const orders = await orderCollection
     .find({
       sellerId,
@@ -33,6 +35,78 @@ const VALID_STATUS = [
   "DELIVERED",
   "CANCELLED",
 ];
+
+// export async function updateOrderStatusService(
+//   orderId: string,
+//   orderStatus: string
+// ) {
+//   if (!ObjectId.isValid(orderId)) {
+//     throw new Error("Invalid order id.");
+//   }
+
+//   if (!VALID_STATUS.includes(orderStatus)) {
+//     throw new Error("Invalid order status.");
+//   }
+
+//   const orderCollection = await getCollection(
+//     collectionNames.ORDERS
+//   );
+
+//   const productCollection = await getCollection(
+//     collectionNames.PRODUCTS
+//   );
+
+//   const order = await orderCollection.findOne({
+//     _id: new ObjectId(orderId),
+//   });
+
+//   if (!order) {
+//     throw new Error("Order not found.");
+//   }
+
+//   // Already same status
+//   if (order.orderStatus === orderStatus) {
+//     throw new Error(`Order is already ${orderStatus}.`);
+//   }
+
+//   // Restore stock only once when cancelling
+//   if (
+//     orderStatus === "CANCELLED" &&
+//     order.orderStatus !== "CANCELLED"
+//   ) {
+//     await productCollection.updateOne(
+//       {
+//         _id: new ObjectId(order.productId),
+//       },
+//       {
+//         $inc: {
+//           stock: order.quantity,
+//         },
+//       }
+//     );
+//   }
+
+//   const result = await orderCollection.updateOne(
+//     {
+//       _id: new ObjectId(orderId),
+//     },
+//     {
+//       $set: {
+//         orderStatus,
+//         updatedAt: new Date(),
+//       },
+//     }
+//   );
+
+//   if (!result.modifiedCount) {
+//     throw new Error("Failed to update order.");
+//   }
+
+//   return {
+//     success: true,
+//     message: `Order marked as ${orderStatus}.`,
+//   };
+// }
 
 export async function updateOrderStatusService(
   orderId: string,
@@ -62,12 +136,11 @@ export async function updateOrderStatusService(
     throw new Error("Order not found.");
   }
 
-  // Already same status
   if (order.orderStatus === orderStatus) {
     throw new Error(`Order is already ${orderStatus}.`);
   }
 
-  // Restore stock only once when cancelling
+  // Restore stock when cancelling
   if (
     orderStatus === "CANCELLED" &&
     order.orderStatus !== "CANCELLED"
@@ -79,6 +152,24 @@ export async function updateOrderStatusService(
       {
         $inc: {
           stock: order.quantity,
+        },
+      }
+    );
+  }
+
+  // Increase totalSold only once
+  if (
+    orderStatus === "DELIVERED" &&
+    order.orderStatus !== "DELIVERED" &&
+    order.paymentStatus === "PAID"
+  ) {
+    await productCollection.updateOne(
+      {
+        _id: new ObjectId(order.productId),
+      },
+      {
+        $inc: {
+          totalSold: order.quantity,
         },
       }
     );
