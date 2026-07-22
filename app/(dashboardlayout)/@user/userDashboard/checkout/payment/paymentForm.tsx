@@ -1,140 +1,163 @@
+
+
 "use client";
 
-import { FormEvent, useState } from "react";
-
+import { useState } from "react";
 import {
-  PaymentElement,
+  CardElement,
   useElements,
   useStripe,
 } from "@stripe/react-stripe-js";
-
-import {
-  CreditCard,
-  Loader2,
-  Lock,
-} from "lucide-react";
-
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
-
-interface PaymentFormProps {
+type Props = {
   orderId: string;
-  total: number;
-}
+  amount: number;
+};
 
 export default function PaymentForm({
   orderId,
-  total,
-}: PaymentFormProps) {
+  amount,
+}: Props) {
   const stripe = useStripe();
   const elements = useElements();
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = async (
-    e: FormEvent<HTMLFormElement>
+  const handlePayment = async (
+    e: React.FormEvent<HTMLFormElement>
   ) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
-      toast.error(
-        "Stripe is not ready."
-      );
-      return;
-    }
+    if (!stripe || !elements) return;
 
     setLoading(true);
+    setError("");
 
-    const { error, paymentIntent } =
-      await stripe.confirmPayment({
-        elements,
-        redirect: "if_required",
+    try {
+      // Create Payment Intent
+      const res = await fetch("/api/payment/create-payment-intent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId,
+          amount,
+        }),
       });
 
-    if (error) {
-      toast.error(
-        error.message ??
-          "Payment failed."
-      );
-      setLoading(false);
-      return;
-    }
+      const data = await res.json();
 
-    if (
-      paymentIntent?.status ===
-      "succeeded"
-    ) {
-      // Update payment status in database
-      const res = await fetch(
-        `/api/orders/${orderId}/payment`,
+      if (!data.success) {
+        throw new Error(data.message);
+      }
+
+      const clientSecret = data.clientSecret;
+
+      const card = elements.getElement(CardElement);
+
+      if (!card) {
+        throw new Error("Card not found");
+      }
+
+      const payment = await stripe.confirmCardPayment(
+        clientSecret,
         {
-          method: "PATCH",
-          headers: {
-            "Content-Type":
-              "application/json",
+          payment_method: {
+            card,
           },
-          body: JSON.stringify({
-            paymentIntentId:
-              paymentIntent.id,
-          }),
         }
       );
 
-      const result = await res.json();
-
-      if (result.success) {
-        toast.success(
-          "Payment successful!"
-        );
-      } else {
-        toast.error(
-          result.message
-        );
+      if (payment.error) {
+        throw new Error(payment.error.message);
       }
-    }
 
-    setLoading(false);
+      if (
+        payment.paymentIntent?.status === "succeeded"
+      ) {
+        await fetch(`/api/payment/success/${orderId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            transactionId:
+              payment.paymentIntent.id,
+          }),
+        });
+
+        toast.success("Payment Successful 🎉");
+      }
+    } catch (error: unknown) {
+  const message =
+    error instanceof Error
+      ? error.message
+      : "Something went wrong";
+
+  setError(message);
+  toast.error(message);
+} finally {
+      setLoading(false);
+    }
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handlePayment}
       className="space-y-6"
     >
-      <div className="rounded-xl border p-5 shadow-sm">
-        <PaymentElement
+      <div>
+        <h2 className="text-xl font-semibold">
+          Total Payment
+        </h2>
+
+        <p className="text-3xl font-bold text-primary mt-2">
+          ${amount}
+        </p>
+      </div>
+
+      <div className="rounded-lg border bg-background p-4">
+        <CardElement
           options={{
-            layout: "tabs",
+            style: {
+              base: {
+                fontSize: "16px",
+                color: "#424770",
+                "::placeholder": {
+                  color: "#aab7c4",
+                },
+              },
+              invalid: {
+                color: "#dc2626",
+              },
+            },
           }}
         />
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Lock className="h-4 w-4 text-green-600" />
-        Your payment is secured by Stripe.
-      </div>
+      {error && (
+        <p className="text-sm text-red-500">
+          {error}
+        </p>
+      )}
 
       <Button
         type="submit"
-        className="h-12 w-full text-base font-semibold"
-        disabled={
-          !stripe || loading
-        }
+        className="w-full"
+        disabled={!stripe || loading}
       >
-        {loading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing...
-          </>
-        ) : (
-          <>
-            <CreditCard className="mr-2 h-5 w-5" />
-            Pay ৳{total}
-          </>
-        )}
+        {loading
+          ? "Processing..."
+          : `Pay $${amount}`}
       </Button>
+
+      <p className="text-center text-xs text-muted-foreground">
+        Secure payment powered by Stripe.
+      </p>
     </form>
   );
 }
