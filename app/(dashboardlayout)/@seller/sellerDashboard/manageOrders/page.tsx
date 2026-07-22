@@ -1,8 +1,256 @@
+// "use client";
+
+// import { MessageCircle, Package } from "lucide-react";
+// import { useSession } from "next-auth/react";
+// import Image from "next/image";
+// import { useEffect, useState } from "react";
+// import { toast } from "sonner";
+
+// import { Badge } from "@/components/ui/badge";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent } from "@/components/ui/card";
+
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
+// import Link from "next/link";
+
+// interface Order {
+//   _id: string;
+//   userId: string;
+//   productName: string;
+//   thumbnail: string;
+
+//   quantity: number;
+//   totalSalePrice: number;
+
+//   paymentStatus: string;
+//   orderStatus: string;
+
+//   createdAt: string;
+
+//   address: {
+//     phone: string;
+//     division: string;
+//     district: string;
+//     area: string;
+//     address: string;
+//     postalCode: string;
+//   };
+// }
+
+// export default function SellerOrdersPage() {
+//   const { data: session } = useSession();
+
+//   const sellerId = (session?.user as { id?: string })?.id;
+
+//   const [orders, setOrders] = useState<Order[]>([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     if (!sellerId) return;
+
+//     const fetchOrders = async () => {
+//       try {
+//         const res = await fetch(`/api/orders/seller/${sellerId}`, {
+//           cache: "no-store",
+//         });
+
+//         const result = await res.json();
+
+//         if (result.success) {
+//           setOrders(result.data);
+//         } else {
+//           toast.error(result.message);
+//         }
+//       } catch {
+//         toast.error("Failed to load seller orders.");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchOrders();
+//   }, [sellerId]);
+
+//   const updateStatus = async (orderId: string, status: string) => {
+//     try {
+//       const res = await fetch(`/api/orders/${orderId}`, {
+//         method: "PATCH",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           orderStatus: status,
+//         }),
+//       });
+
+//       const result = await res.json();
+
+//       if (!result.success) {
+//         toast.error(result.message);
+//         return;
+//       }
+
+//       setOrders((prev) =>
+//         prev.map((order) =>
+//           order._id === orderId
+//             ? {
+//                 ...order,
+//                 orderStatus: status,
+//               }
+//             : order,
+//         ),
+//       );
+
+//       toast.success("Order updated successfully.");
+//     } catch {
+//       toast.error("Failed to update order.");
+//     }
+//   };
+
+//   if (loading) {
+//     return <div className="py-20 text-center">Loading orders...</div>;
+//   }
+
+//   return (
+//     <section className="p-6">
+//       <div className="mb-8">
+//         <h1 className="text-3xl font-bold">Manage Orders</h1>
+
+//         <p className="text-muted-foreground">Manage customer orders.</p>
+//       </div>
+
+//       {orders.length === 0 ? (
+//         <div className="rounded-lg border py-20 text-center">
+//           <Package className="mx-auto mb-4 h-14 w-14 text-muted-foreground" />
+
+//           <h2 className="text-xl font-semibold">No Orders Found</h2>
+//         </div>
+//       ) : (
+//         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+//           {orders.map((order) => (
+//             <Card key={order._id}>
+//               <Image
+//                 src={order.thumbnail}
+//                 alt={order.productName}
+//                 width={500}
+//                 height={300}
+//                 className="h-56 w-full object-cover"
+//               />
+
+//               <CardContent className="space-y-4 p-5">
+//                 <div>
+//                   <h2 className="line-clamp-2 text-lg font-bold">
+//                     {order.productName}
+//                   </h2>
+
+//                   <p className="text-sm text-muted-foreground">
+//                     {new Date(order.createdAt).toLocaleDateString()}
+//                   </p>
+//                 </div>
+
+//                 <div className="space-y-2 text-sm">
+//                   <div className="flex justify-between">
+//                     <span>Quantity</span>
+//                     <span>{order.quantity}</span>
+//                   </div>
+
+//                   <div className="flex justify-between">
+//                     <span>Total</span>
+//                     <span className="font-semibold">
+//                       ৳{order.totalSalePrice}
+//                     </span>
+//                   </div>
+//                 </div>
+
+//                 <div className="rounded-md border p-3 text-sm">
+//                   <p className="font-semibold mb-2">Shipping Address</p>
+
+//                   <p>{order.address.address}</p>
+
+//                   <p>
+//                     {order.address.area}, {order.address.district}
+//                   </p>
+
+//                   <p>{order.address.division}</p>
+
+//                   <p>{order.address.postalCode}</p>
+
+//                   <p>{order.address.phone}</p>
+//                 </div>
+
+//                 <div className="flex justify-between">
+//                   <Badge
+//                     variant={
+//                       order.paymentStatus === "PAID" ? "default" : "secondary"
+//                     }
+//                   >
+//                     {order.paymentStatus}
+//                   </Badge>
+
+//                   <Badge>{order.orderStatus}</Badge>
+//                 </div>
+
+//                 <Select
+//                   defaultValue={order.orderStatus}
+//                   onValueChange={(value) => {
+//                     if (!value) return;
+//                     updateStatus(order._id, value);
+//                   }}
+//                 >
+//                   <SelectTrigger>
+//                     <SelectValue />
+//                   </SelectTrigger>
+
+//                   <SelectContent>
+//                     <SelectItem value="PENDING">Pending</SelectItem>
+
+//                     <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+
+//                     <SelectItem value="SHIPPED">Shipped</SelectItem>
+
+//                     <SelectItem value="DELIVERED">Delivered</SelectItem>
+
+//                     <SelectItem value="CANCELLED">Cancelled</SelectItem>
+//                   </SelectContent>
+//                 </Select>
+
+               
+//                 <div className="flex gap-3">
+//                   <Button
+//                     className="flex-1"
+//                     onClick={() => updateStatus(order._id, order.orderStatus)}
+//                   >
+//                     Update Status
+//                   </Button>
+
+//                   <Button asChild variant="outline" size="icon">
+//                     <Link href={`/sellerDashboard/chat/${order._id}`}>
+//                       <MessageCircle className="h-5 w-5" />
+//                     </Link>
+//                   </Button>
+//                 </div>
+//               </CardContent>
+//             </Card>
+//           ))}
+//         </div>
+//       )}
+//     </section>
+//   );
+// }
+
+
 "use client";
 
-import { MessageCircle, Package } from "lucide-react";
+import { MessageCircle, Package, ShoppingBag, CalendarDays } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -17,11 +265,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Link from "next/link";
 
 interface Order {
   _id: string;
   userId: string;
+
   productName: string;
   thumbnail: string;
 
@@ -77,7 +325,10 @@ export default function SellerOrdersPage() {
     fetchOrders();
   }, [sellerId]);
 
-  const updateStatus = async (orderId: string, status: string) => {
+  const updateStatus = async (
+    orderId: string,
+    status: string
+  ) => {
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: "PATCH",
@@ -103,38 +354,55 @@ export default function SellerOrdersPage() {
                 ...order,
                 orderStatus: status,
               }
-            : order,
-        ),
+            : order
+        )
       );
 
-      toast.success("Order updated successfully.");
+      toast.success("Order status updated.");
     } catch {
       toast.error("Failed to update order.");
     }
   };
 
   if (loading) {
-    return <div className="py-20 text-center">Loading orders...</div>;
+    return (
+      <div className="py-24 text-center text-lg">
+        Loading orders...
+      </div>
+    );
   }
 
   return (
     <section className="p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Manage Orders</h1>
+        <h1 className="text-3xl font-bold">
+          Manage Orders
+        </h1>
 
-        <p className="text-muted-foreground">Manage customer orders.</p>
+        <p className="text-muted-foreground">
+          Review and update customer orders.
+        </p>
       </div>
 
       {orders.length === 0 ? (
-        <div className="rounded-lg border py-20 text-center">
+        <div className="rounded-xl border py-20 text-center">
           <Package className="mx-auto mb-4 h-14 w-14 text-muted-foreground" />
 
-          <h2 className="text-xl font-semibold">No Orders Found</h2>
+          <h2 className="text-xl font-semibold">
+            No Orders Found
+          </h2>
+
+          <p className="mt-2 text-muted-foreground">
+            Orders will appear here after customers purchase.
+          </p>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {orders.map((order) => (
-            <Card key={order._id}>
+            <Card
+              key={order._id}
+              className="overflow-hidden rounded-2xl"
+            >
               <Image
                 src={order.thumbnail}
                 alt={order.productName}
@@ -143,38 +411,48 @@ export default function SellerOrdersPage() {
                 className="h-56 w-full object-cover"
               />
 
-              <CardContent className="space-y-4 p-5">
+              <CardContent className="space-y-5 p-5">
                 <div>
                   <h2 className="line-clamp-2 text-lg font-bold">
                     {order.productName}
                   </h2>
 
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(order.createdAt).toLocaleDateString()}
-                  </p>
+                  <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    <CalendarDays className="h-4 w-4" />
+
+                    {new Date(
+                      order.createdAt
+                    ).toLocaleDateString()}
+                  </div>
                 </div>
 
-                <div className="space-y-2 text-sm">
+                <div className="rounded-xl bg-muted/50 p-4 space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Quantity</span>
+
                     <span>{order.quantity}</span>
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between font-semibold">
                     <span>Total</span>
-                    <span className="font-semibold">
+
+                    <span>
                       ৳{order.totalSalePrice}
                     </span>
                   </div>
                 </div>
 
-                <div className="rounded-md border p-3 text-sm">
-                  <p className="font-semibold mb-2">Shipping Address</p>
+                <div className="rounded-xl border p-4 text-sm">
+                  <div className="mb-2 flex items-center gap-2 font-semibold">
+                    <ShoppingBag className="h-4 w-4 text-primary" />
+                    Shipping Address
+                  </div>
 
                   <p>{order.address.address}</p>
 
                   <p>
-                    {order.address.area}, {order.address.district}
+                    {order.address.area},{" "}
+                    {order.address.district}
                   </p>
 
                   <p>{order.address.division}</p>
@@ -184,68 +462,75 @@ export default function SellerOrdersPage() {
                   <p>{order.address.phone}</p>
                 </div>
 
-                <div className="flex justify-between">
+                <div className="flex items-center justify-between">
                   <Badge
                     variant={
-                      order.paymentStatus === "PAID" ? "default" : "secondary"
+                      order.paymentStatus === "PAID"
+                        ? "default"
+                        : "secondary"
                     }
                   >
                     {order.paymentStatus}
                   </Badge>
 
-                  <Badge>{order.orderStatus}</Badge>
+                  <Badge variant="outline">
+                    {order.orderStatus}
+                  </Badge>
                 </div>
 
-                <Select
-                  defaultValue={order.orderStatus}
-                  onValueChange={(value) => {
-                    if (!value) return;
-                    updateStatus(order._id, value);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    Update Order Status
+                  </label>
 
-                  <SelectContent>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-
-                    <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-
-                    <SelectItem value="SHIPPED">Shipped</SelectItem>
-
-                    <SelectItem value="DELIVERED">Delivered</SelectItem>
-
-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                {/* <Button
-                  className="w-full"
-                  onClick={() =>
-                    updateStatus(
-                      order._id,
-                      order.orderStatus
-                    )
+                  <Select
+                    value={order.orderStatus}
+                    onValueChange={(value) =>
+                    {if(!value) return
+                      updateStatus(order._id, value)
+                    }
                   }
-                >
-                  Update Status
-                </Button> */}
-
-                <div className="flex gap-3">
-                  <Button
-                    className="flex-1"
-                    onClick={() => updateStatus(order._id, order.orderStatus)}
                   >
-                    Update Status
-                  </Button>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
 
-                  <Button asChild variant="outline" size="icon">
-                    <Link href={`/sellerDashboard/chat/${order._id}`}>
-                      <MessageCircle className="h-5 w-5" />
-                    </Link>
-                  </Button>
+                    <SelectContent>
+                      <SelectItem value="PENDING">
+                        Pending
+                      </SelectItem>
+
+                      <SelectItem value="CONFIRMED">
+                        Confirmed
+                      </SelectItem>
+
+                      <SelectItem value="SHIPPED">
+                        Shipped
+                      </SelectItem>
+
+                      <SelectItem value="DELIVERED">
+                        Delivered
+                      </SelectItem>
+
+                      <SelectItem value="CANCELLED">
+                        Cancelled
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+
+                <Button
+                  asChild
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Link
+                    href={`/sellerDashboard/chat/${order._id}`}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Chat with Customer
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           ))}

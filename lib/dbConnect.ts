@@ -14,7 +14,8 @@ export const collectionNames = {
   ADDRESS:"address",
   ORDERS:"orders",
   COUPONS:"coupons",
-  CHATS:"chats"
+  CHATS:"chats",
+  REVIEWS:"reviews",
 };
 
 if (!uri) {
