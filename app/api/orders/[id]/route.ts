@@ -1,5 +1,41 @@
+import { getSingleOrderService } from "@/services/orders/orders.services";
 import { updateOrderStatusService } from "@/services/orders/sellerOrders/sellerorders.services";
 import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(
+  request: NextRequest,
+  {
+    params,
+  }: {
+    params: Promise<{ id: string }>;
+  }
+) {
+  try {
+    const { id } = await params;
+
+    const order = await getSingleOrderService(
+      id
+    );
+
+    return NextResponse.json({
+      success: true,
+      data: order,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch order.",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+}
 
 interface RouteProps {
   params: Promise<{

@@ -147,7 +147,7 @@ export default function ManageProfilePage() {
   }
 
   return (
-    <section className="mx-auto max-w-5xl p-6">
+    <section className="mx-auto w-11/12 p-6">
       <Card>
         <CardContent className="space-y-8 p-8">
           <h1 className="text-3xl font-bold">
